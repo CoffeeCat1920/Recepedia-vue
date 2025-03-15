@@ -1,0 +1,29 @@
+services:
+  psql_bp:
+    image: postgres:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${BLUEPRINT_DB_DATABASE}
+      POSTGRES_USER: ${BLUEPRINT_DB_USERNAME}
+      POSTGRES_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust  
+    ports:
+      - "${BLUEPRINT_DB_PORT}:5432"
+    volumes:
+      - psql_volume_bp:/var/lib/postgresql/data
+
+  pgAdmin_bp:
+    image: dpage/pgadmin4
+    container_name: pgAdmin_bp
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=test@gmail.com # Set the PostgreSQL password
+      - PGADMIN_DEFAULT_PASSWORD=123  # Set the PostgreSQL password
+    ports:
+      - "8888:80"
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+    restart: always
+
+volumes:
+  psql_volume_bp:
+  pgadmin-data:
