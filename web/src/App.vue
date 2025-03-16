@@ -3,7 +3,6 @@
   import { ref } from 'vue'
   import axios from 'axios'
 
-
   export default {
 
     data() {
@@ -31,9 +30,18 @@
 
 <template>
 
-  <div class='app'>
-    <h1>{{message}}</h1>
-    <button v-on:click="count++">Counter: {{count}}</button>
-  </div class='app'>
+  <div class="header">
+
+    <h1 class="logo">•ᴗ• Recepidia</h1>
+    <h2>What to have today?</h2>
+
+    <form class="search-bar" action="/view/search" >
+      <input class="search-input" name="search" type="text" placeholder="Search" aria-label="Search">
+      <button class="search-button">Search</button>
+    </form>
+
+  </div>
+
+  <h2>Most Viewed</h2>
 
 </template>
