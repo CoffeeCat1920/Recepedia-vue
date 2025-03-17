@@ -14,9 +14,18 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Apply CORS middleware
 	r.Use(s.corsMiddleware)
-	r.HandleFunc("/health", s.healthHandler)
 
-  r.HandleFunc("/api/message", api.MessageHandler).Methods("GET")
+  // Api Handler
+  // Session
+  r.HandleFunc("/signup", api.SignUpHandler).Methods("POST")
+  r.HandleFunc("/login", api.LoginHandler).Methods("POST")
+  r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
+
+  // Data Handler
+  r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")
+
+  // Debugging
+	r.HandleFunc("/health", s.healthHandler)
 
 	return r
 }
@@ -24,13 +33,17 @@ func (s *Server) RegisterRoutes() http.Handler {
 // CORS middleware
 func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// CORS Headers
-		w.Header().Set("Access-Control-Allow-Origin", "*") // Wildcard allows all origins
+		// Allow requests from frontend origin (replace with actual frontend URL)
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:5173") // Set a specific origin
+
+		// Allowed HTTP methods
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS, PATCH")
+
+		// Allowed headers
 		w.Header().Set("Access-Control-Allow-Headers", "Accept, Authorization, Content-Type")
-		w.Header().Set("Access-Control-Allow-Credentials", "false") // Credentials not allowed with wildcard origins
-    w.Header().Set("http://localhost:5173", "true") // Credentials not allowed with wildcard origins
-    w.Header().Set("Content-Type", "true") // Credentials not allowed with wildcard origins
+
+		// If you want to allow credentials (cookies, auth headers), set this to true
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 		// Handle preflight OPTIONS requests
 		if r.Method == http.MethodOptions {
@@ -41,6 +54,7 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
+
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]string)

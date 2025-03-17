@@ -7,6 +7,9 @@ services:
       POSTGRES_USER: ${BLUEPRINT_DB_USERNAME}
       POSTGRES_PASSWORD: ${BLUEPRINT_DB_PASSWORD}
       POSTGRES_HOST_AUTH_METHOD: trust  
+      # Add these lines to allow connections
+      POSTGRES_INITDB_ARGS=--auth-host: trust
+      POSTGRES_INITDB_ARGS=--auth-local: trust
     ports:
       - "${BLUEPRINT_DB_PORT}:5432"
     volumes:

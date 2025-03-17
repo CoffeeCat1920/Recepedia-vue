@@ -1,6 +1,7 @@
 package database
 
 import (
+	"big/internal/modals"
 	"context"
 	"database/sql"
 	"fmt"
@@ -17,6 +18,16 @@ import (
 type Service interface {
 	// Actual funcitons to be used
 	// The functions for modals
+
+  // User Functions
+  AddUser(user *modals.User) error 
+  GetUserByName(name string) (*modals.User, error) 
+  GetUserByUUid(uuid string) (*modals.User, error) 
+
+  // Session Functions
+  AddSession(session *modals.Session) (error) 
+  GetSession(sessionId string) (*modals.Session, error) 
+  DeleteSession(sessionId string) (error) {
 
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
@@ -118,10 +129,15 @@ func (s *service) Close() error {
 }
 
 func (s *service) doesExists(value, attribute, table string) bool {
-	q := fmt.Sprintf("SELECT 1 FROM %s WHERE %s = $1", table, attribute)
+  q := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE %s = $1)", table, attribute)
 
-	var exists bool
-	err := s.db.QueryRow(q, value).Scan(&exists)
+  var exists bool
+  err := s.db.QueryRow(q, value).Scan(&exists)
 
-	return err == sql.ErrNoRows
+  if err != nil {
+    fmt.Println("Error checking existence:", err)
+    return false
+  }
+
+  return exists
 }
