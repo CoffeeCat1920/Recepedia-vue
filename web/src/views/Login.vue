@@ -1,22 +1,28 @@
-<script setup>
-  import { ref } from 'vue';
+<script>
+  import { ref } from 'vue'
+  import { useAuthStore } from '@/stores/authStore.ts'
 
-  const name = ref('');
-  const password = ref('');
+  export default {
 
-  const submitForm = async () => {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: name.value, password: password.value }),
-    })
+    setup() {
 
-    if (response.ok) {
-      alert('Login successful!');
-    } else {
-      alert('Login failed. Please try again.');
+      const name = ref('');
+      const password = ref('');
+
+      const auth = useAuthStore();
+
+      const login = async () => {
+        await auth.login(name.value, password.value);
+      }; 
+
+      return { auth, name, password, login };
+    }, 
+    async mount() {
+      // await this.auth.checkLogin(); 
     }
-  }  
+  }
+
+
 </script>
 
 <template>
@@ -24,7 +30,7 @@
   <h1>Login</h1>
   <h2>Welcome back</h2>
 
-  <form @submit.prevent="submitForm">
+  <form @submit.prevent="login">
 
     <p>
       <label for="name">Name</label>

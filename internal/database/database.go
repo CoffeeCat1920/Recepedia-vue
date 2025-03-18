@@ -27,7 +27,7 @@ type Service interface {
   // Session Functions
   AddSession(session *modals.Session) (error) 
   GetSession(sessionId string) (*modals.Session, error) 
-  DeleteSession(sessionId string) (error) {
+  DeleteSession(sessionId string) (error) 
 
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.

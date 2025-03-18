@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	// "time"
 )
 
 func auth(r *http.Request) (*modals.Session, error) {
@@ -33,11 +34,14 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
     fmt.Printf("Can't login cause, %s \n", err.Error())
   }
 
+  fmt.Printf("\nSession Cookie, name: %s\n", userReq.Name)
+
   db := database.New()
   user, err := db.GetUserByName(userReq.Name)
+
   if err != nil {
-    fmt.Printf("\nCan't find user\n")
-    http.Redirect(w, r, "/view/login", 302)
+    http.Error(w, "Incorrect Password", http.StatusInternalServerError)
+    fmt.Printf("\nCan't find user cause, %s\n", err)
     return
   }
   if !user.CheckPassword(userReq.Password) {
@@ -55,7 +59,6 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
   }
   
   w.WriteHeader(http.StatusOK)
-
 }
 
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
@@ -74,11 +77,23 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
     return 
   }
 
+  // http.SetCookie(w, &http.Cookie{
+  //   Name:     "session-token",
+  //   Value:    "",
+  //   Expires:  time.Unix(0, 0), // Expire immediately
+  //   Path:     "/",
+  //   HttpOnly: true,
+  //   SameSite: http.SameSiteLaxMode,
+  // })
+
+  w.WriteHeader(http.StatusOK)
+
 }
 
-
 func LoginInfoHandler(w http.ResponseWriter, r *http.Request) {
+
   session, err := auth(r) 
+
   if err != nil {
     http.Error(w, "Unauthorized", http.StatusUnauthorized)
     fmt.Printf("Can't get session in db cause, %s\n", err.Error())
@@ -98,5 +113,19 @@ func LoginInfoHandler(w http.ResponseWriter, r *http.Request) {
   }
 
   w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
   json.NewEncoder(w).Encode(loginInfo)
 } 
+
+
+func Auth( next http.HandlerFunc ) http.HandlerFunc {
+  return func(w http.ResponseWriter, r *http.Request) {
+    _, err := auth(r)
+    if err != nil {
+      http.Error(w, "Unauthorized", http.StatusUnauthorized)
+      return
+    }
+
+    next(w, r)
+  }
+}

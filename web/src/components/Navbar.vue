@@ -1,29 +1,22 @@
 <!-- /component/Navbar.vue -->
 
 <script>
+  import { useAuthStore } from "@/stores/authStore";
+
   export default {
-    data() {
-      return {
-        user: null,
-        loggedIn: false,
-      }
-    },    
+    setup() {
+      const auth = useAuthStore();
+
+      const logout = async () => {
+        await auth.logout();
+      };
+
+      return { auth, logout };
+    },
     async mounted() {
-      try {
-        const response = await fetch("/api/data/login", {
-          credentials: "include",
-          method: 'GET',
-        });
-
-        if (!response.ok) throw new Error("Unauthorized");
-
-        const data = await response.json();
-        this.user = data.User;
-        this.loggedIn = true;
-
-      } catch (error) {}
-    }
-  }
+      await this.auth.checkLogin(); 
+    },
+  };
 </script>
 
 <template>
@@ -39,20 +32,21 @@
         <li class="left-just"><router-link to="/">Home</router-link></li>
         <li class="left-just"><router-link to="/about">About</router-link></li>
 
-        <template v-if="loggedIn">
+        <template v-if="auth.loggedIn">
           <li class="left-just" ><router-link to="/uploadrecipe">Upload Recipe</router-link></li>
           <li class="left-just" ><router-link to="/dashboard">Dashboard</router-link></li>
-          <li class="left-just" ><router-link to="/api/logout">Logout</router-link></li>
+          <li class="left-just" >
+            <a href="#" @click.prevent="logout">Logout</a>
+          </li>
         </template>
 
         <template v-else>
           <li class="left-just"><router-link to="/signup">SignUp</router-link></li>
-          <li class="left-just"><router-link to="/login">Login</router-link></li>
+          <li class="left-just"><router-link to="/login">LogIn</router-link></li>
         </template>
 
 
       </ul>
-
 
     </div>
 
