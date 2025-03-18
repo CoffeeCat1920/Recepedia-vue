@@ -10,14 +10,14 @@ export const useAuthStore = defineStore("auth", {
     async checkLogin() {
       try {
         const response = await fetch("/api/data/login", { credentials: "include" });
-        if (response.ok) {
-          const data = await response.json();
-          this.user = data.User;
-          this.loggedIn = true;
-        } else {
+        if (!response.ok) {
           this.user = null;
           this.loggedIn = false;
-        }
+          return
+        }           
+        const data = await response.json();
+        this.user = data.User;
+        this.loggedIn = true;
       } catch (error) {
         console.error("Login check failed", error);
       }
@@ -32,13 +32,13 @@ export const useAuthStore = defineStore("auth", {
           body: JSON.stringify({ name: name, password: password }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          this.user = data.User;
-          this.loggedIn = true;
-        } else {
-          throw new Error("Login failed");
+        if (!response.ok) {
+          return
         }
+
+        const data = await response.json();
+        this.user = data.name;
+        this.loggedIn = true;
       } catch (error) {
         console.error("Login error", error);
       }

@@ -11,25 +11,25 @@ export const useAuthStore = defineStore("auth", {
     async checkLogin() {
       try {
         const response = await fetch("/api/data/login", { credentials: "include" });
-        if (response.ok) {
-          const data = await response.json();
-          this.user = data.User;
-          this.loggedIn = true;
-        } else {
+        if (!response.ok) {
           this.user = "";
           this.loggedIn = false;
-        }
+          return
+        } 
+        
+        const data = await response.json();
+        this.user = data.User;
+        this.loggedIn = true;
       } catch (error) {
         console.error("Login check failed", error);
       }
     },
+
     async login(name : string, password : string) {
       try {
 
         const router = useRouter();
 
-        console.log("Sending:", JSON.stringify({ name: name, password: password }));
-        
         const response = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -39,6 +39,7 @@ export const useAuthStore = defineStore("auth", {
 
         if (!response.ok) {
           router.push('/login');
+          return;
         } 
 
         this.user = name;
@@ -54,13 +55,12 @@ export const useAuthStore = defineStore("auth", {
       const router = useRouter();
       try {
         const response = await fetch("/api/logout", { method: "POST", credentials: "include" });
-        if (response.ok) {
-          this.user = ""; 
-          this.loggedIn = false;
-          router.push('/login')
-        } else {
+        if (!response.ok) {
           throw new Error("Logout failed");
-        }
+        } 
+        this.user = ""; 
+        this.loggedIn = false;
+        router.push('/login')
       } catch (error) {
         console.error("Logout error", error);
       }

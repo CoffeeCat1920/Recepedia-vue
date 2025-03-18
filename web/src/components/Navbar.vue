@@ -23,7 +23,7 @@
 
   <nav class="navbar">
 
-    <router-link class="brand" to="/">•ᴗ• Recipidia</router-link>
+    <router-link class="brand" to="/">•ᴗ• Recipidia {{auth.loggedIn}} </router-link>
 
     <div class="nav-links">
 
