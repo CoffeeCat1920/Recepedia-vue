@@ -4,7 +4,7 @@ import { useRouter } from "vue-router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: null,
+    user: "",
     loggedIn: false,
   }),
   actions: {
@@ -16,7 +16,7 @@ export const useAuthStore = defineStore("auth", {
           this.user = data.User;
           this.loggedIn = true;
         } else {
-          this.user = null;
+          this.user = "";
           this.loggedIn = false;
         }
       } catch (error) {
@@ -37,14 +37,14 @@ export const useAuthStore = defineStore("auth", {
           body: JSON.stringify({ name, password }),
         });
 
-        if (response.ok) {
-          const data = await response.json();
-          this.user = data.User;
-          this.loggedIn = true;
-          router.push('/dashboard');
-        } else {
+        if (!response.ok) {
           router.push('/login');
-        }
+        } 
+
+        this.user = name;
+        this.loggedIn = true;
+        router.push('/dashboard');
+
       } catch (error) {
         console.error("Login error", error);
       }
@@ -55,7 +55,7 @@ export const useAuthStore = defineStore("auth", {
       try {
         const response = await fetch("/api/logout", { method: "POST", credentials: "include" });
         if (response.ok) {
-          this.user = null;
+          this.user = ""; 
           this.loggedIn = false;
           router.push('/login')
         } else {
