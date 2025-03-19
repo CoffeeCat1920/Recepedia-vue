@@ -6,9 +6,9 @@
 
 <template>
 
-  <div class="header">
+  <div class="flex flex-col items-center justify-center min-h-screen text-center">
 
-    <h1 class="logo">•ᴗ• Recepidia</h1>
+    <h1>•ᴗ• Recepidia</h1>
     <h2>What to have today?</h2>
 
     <form class="search-bar" action="/view/search" >
