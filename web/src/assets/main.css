@@ -168,6 +168,12 @@ h2 {
   align-items: auto;
 }
 
+.nav-item {
+  display: flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+}
+
 .nav-list {
   list-style-type: none;
   margin: 0;

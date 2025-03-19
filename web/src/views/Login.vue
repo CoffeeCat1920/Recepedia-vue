@@ -1,10 +1,13 @@
 <script>
   import { ref } from 'vue'
   import { useAuthStore } from '@/stores/authStore.ts'
+  import { useRouter } from "vue-router";
 
   export default {
 
     setup() {
+      
+      const router = useRouter();
 
       const name = ref('');
       const password = ref('');
@@ -12,7 +15,7 @@
       const auth = useAuthStore();
 
       const login = async () => {
-        await auth.login(name.value, password.value);
+        await auth.login(name.value, password.value, router);
       }; 
 
       return { auth, name, password, login };

@@ -12,8 +12,7 @@
 </script>
 
 <template>
-
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
   <Navbar />  
   <router-view />
-
 </template>

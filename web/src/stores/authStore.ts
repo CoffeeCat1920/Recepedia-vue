@@ -1,9 +1,10 @@
 // src/stores/authStore.js
 import { defineStore } from "pinia";
+import type { Router } from "vue-router";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
-    user: null,
+    user: "",
     loggedIn: false,
   }),
   actions: {
@@ -11,10 +12,11 @@ export const useAuthStore = defineStore("auth", {
       try {
         const response = await fetch("/api/data/login", { credentials: "include" });
         if (!response.ok) {
-          this.user = null;
+          this.user = "";
           this.loggedIn = false;
           return
-        }           
+        } 
+        
         const data = await response.json();
         this.user = data.User;
         this.loggedIn = true;
@@ -22,37 +24,40 @@ export const useAuthStore = defineStore("auth", {
         console.error("Login check failed", error);
       }
     },
-    async login(name : string, password : string) {
+
+    async login(name : string, password : string, router : Router) {
       try {
 
         const response = await fetch("/api/login", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ name: name, password: password }),
+          body: JSON.stringify({ name, password }),
         });
 
         if (!response.ok) {
-          return
-        }
+          router.push('/login');
+          return;
+        } 
 
-        const data = await response.json();
-        this.user = data.name;
+        this.user = name;
         this.loggedIn = true;
+        router.push('/dashboard');
+
       } catch (error) {
         console.error("Login error", error);
       }
 
     },
-    async logout() {
+    async logout(router : Router) {
       try {
         const response = await fetch("/api/logout", { method: "POST", credentials: "include" });
-        if (response.ok) {
-          this.user = null;
-          this.loggedIn = false;
-        } else {
+        if (!response.ok) {
           throw new Error("Logout failed");
-        }
+        } 
+        this.user = ""; 
+        this.loggedIn = false;
+        router.push('/login')
       } catch (error) {
         console.error("Logout error", error);
       }
