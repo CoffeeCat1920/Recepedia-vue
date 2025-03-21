@@ -29,6 +29,10 @@ type Service interface {
   GetSession(sessionId string) (*modals.Session, error) 
   DeleteSession(sessionId string) (error) 
 
+  // Recipe
+  AddRecipe(recipe *modals.Recipe) error 
+  GetRecipe(UUID string) (*modals.Recipe, error) 
+
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.
 	Health() map[string]string

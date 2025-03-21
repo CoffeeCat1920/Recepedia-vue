@@ -7,7 +7,7 @@ func (s *service) AddRecipe(recipe *modals.Recipe) error {
   INSERT INTO recipes(uuid, name, ownerid, views)
   VALUES($1, $2, $3, -1)
   `
-	_, err := s.db.Exec(q, recipe.UUID, recipe.Name, recipe.OwnerId, recipe.Views)
+	_, err := s.db.Exec(q, recipe.UUID, recipe.Name, recipe.OwnerId)
 	if err != nil {
 		return err
 	}

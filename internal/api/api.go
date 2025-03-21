@@ -16,6 +16,11 @@ type LoginInfo struct {
   User string `json:"name"`
 }
 
+type RecipeInfo struct {
+  Name string `json:"name"`
+  Content string `json:"content"` 
+}
+
 func createCookie(w http.ResponseWriter, ownerId string) (*modals.Session) {
   session := modals.NewSession(ownerId)
   exp, err := session.GetExpTime()
