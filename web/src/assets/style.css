@@ -1,5 +1,72 @@
+@import url('https://fonts.googleapis.com/css2?family=Monomakh&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
 
-@tailwind base;
-@tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .card-container {
+    @apply bg-amber-100 border-3 border-amber-900 p-2 shadow-lg shadow-amber-300;
+  }
+
+  /* NOTE: See how these staples works */
+
+  .card-content {
+    @apply bg-amber-100 border-2 border-dashed border-amber-700 
+           bg-[url('/OldPaperTexture.png')] px-10 py-12 w-96 relative;
+  }
+
+  .card-content::before,
+  .card-content::after {
+    content: "";
+    position: absolute;
+    width: 20px; /* Width of the staple */
+    height: 4px;  /* Thickness of the staple */
+    background-color: #6b4f30; /* Staple color (adjust for realism) */
+    top: 10px; /* Positioning above the card */
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.2); /* Shadow for realism */
+  }
+
+  .card-content::before {
+    left: 10px; 
+    transform: rotate(-15deg);
+  }
+
+  .card-content::after {
+    right: 10px; /* Position for right staple */
+    transform: rotate(15deg);
+  }
+
+  .title {
+    @apply text-4xl font-[Monomakh] mb-6 text-amber-900;
+  }
+
+  .title-secondary {
+    @apply mb-4 text-amber-900;
+  }
+
+  .f-label {
+    @apply text-left text-amber-900 italic font-medium;
+  } 
+
+  .f-input {
+    @apply border-0 border-b-2 border-dashed border-amber-700 px-4 py-2 focus:outline-none focus:border-amber-600;
+  }
+
+  .taped-button {
+    @apply bg-amber-500 text-white font-semibold px-6 py-2 shadow-lg 
+           transition rotate-6 hover:rotate-3 relative cursor-pointer;
+  }
+
+  .tape {
+    @apply absolute w-16 h-4 bg-blue-200 opacity-90;
+  }
+
+  .tape-top {
+    @apply -top-2 left-1/2 -translate-x-1/2 rotate-[-5deg];
+  }
+
+  .tape-bottom {
+    @apply -bottom-2 left-1/2 -translate-x-1/2 rotate-[5deg];
+  }
+
+}

@@ -1,23 +1,42 @@
 <!-- /src/views/Home.vue -->
 
 <script setup>
-  console.log("Home.vue");
+  import Brand from '@/components/Brand.vue';
 </script>
 
 <template>
 
-  <div class="flex flex-col items-center justify-center min-h-screen text-center">
+  <div class="flex flex-col items-center text-center pt-10">
 
-    <h1>•ᴗ• Recepidia</h1>
-    <h2>What to have today?</h2>
+    <div class="card-container">
+      
+      <div class="card-content px-100">
 
-    <form class="search-bar" action="/view/search" >
-      <input class="search-input" name="search" type="text" placeholder="Search" aria-label="Search">
-      <button class="search-button">Search</button>
-    </form>
+        <Brand />
+
+        <div class="flex flex-col items-center">
+
+          <form class="flex flex-col mt-20" action="/view/search" >
+
+            <input class="f-input" name="search" type="text" placeholder="Search" aria-label="Search">
+
+            <div class="relative inline-block mt-10">
+              <button type="submit" class="taped-button">Search</button> 
+              
+              <div class="tape tape-top"></div>
+              <div class="tape tape-bottom"></div>
+            </div>
+
+          </form>
+
+        </div>
+
+      </div>
+
+    </div>
 
   </div>
 
-  <h2>Most Viewed</h2>
+  <h2 class="text-center text-amber-900 font-[Monomakh] font-bold text-3xl pt-20">Most Viewed</h2>
 
 </template>

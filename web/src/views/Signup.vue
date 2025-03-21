@@ -20,26 +20,46 @@
 </script>
 
 <template>
+
   <div>
-    <h1>Sign Up</h1>
-    <h2>Welcome</h2>
 
-    <form @submit.prevent="submitForm">
-      <p>
-        <label for="name">Name</label>
-        <br>
-        <input id="name" v-model="name" type="text" required />
-      </p>
+    <div class="flex flex-col items-center text-center justify-center 
+                  h-screen">
 
-      <p>
-        <label for="password">Password</label>
-        <br>
-        <input id="password" v-model="password" type="password" required />
-      </p>
+      <div class="card-container">
 
-      <p>
-        <button type="submit">Submit</button>
-      </p>
-    </form>
+        <div class="card-content">
+
+            <h1 class="title">Sign Up</h1>
+            <h2 class="title-secondary">Welcome</h2>
+
+            <form @submit.prevent="submitForm" class="flex flex-col gap-4">
+              <p class="flex flex-col">
+                <label for="name" class="f-label">Name</label>
+                <input id="name" v-model="name" type="text" required class="f-input"/>
+              </p>
+
+              <p class="flex flex-col">
+                <label for="password" class="f-label">Password</label>
+                <input id="password" v-model="password" type="password" required class="f-input"/>
+              </p>
+              
+              <div class="relative inline-block mt-5">
+                <button type="submit" class="taped-button">Submit</button> 
+                
+                <div class="tape tape-top"></div>
+                <div class="tape tape-bottom"></div>
+              </div>
+              
+              
+            </form>
+
+          </div>
+
+        </div>
+
+      
+    </div>
+
   </div>
 </template>
