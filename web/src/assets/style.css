@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Monomakh&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@config "../../tailwind.config.js";
 
 @tailwind utilities;
 
@@ -12,7 +14,7 @@
 
   .card-content {
     @apply bg-amber-100 border-2 border-dashed border-amber-700 
-           bg-[url('/OldPaperTexture.png')] px-10 py-12 w-96 relative;
+           bg-[url('/OldPaperTexture.png')] px-8 py-8 relative;
   }
 
   .card-content::before,
@@ -67,6 +69,14 @@
 
   .tape-bottom {
     @apply -bottom-2 left-1/2 -translate-x-1/2 rotate-[5deg];
+  }
+
+  .recipe-h1 {
+    @apply text-center text-amber-900 font-monomakh;
+  }
+
+  .recipe-heading {
+    @apply text-left text-amber-950 font-roboto;
   }
 
 }

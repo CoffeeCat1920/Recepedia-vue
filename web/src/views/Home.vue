@@ -6,7 +6,7 @@
 
 <template>
 
-  <div class="flex flex-col items-center text-center pt-10">
+  <div class="flex flex-col items-center text-center pt-10 mx-100">
 
     <div class="card-container">
       

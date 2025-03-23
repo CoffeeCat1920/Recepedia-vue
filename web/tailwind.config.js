@@ -1,29 +1,65 @@
 export default {
-  darkMode: "media",
-  future: {
-    // removeDeprecatedGapUtilities: true,
-    // purgeLayersByDefault: true,
-  },
   content: [
     "./index.html",
     "./src/**/*.{vue,js,ts,jsx,tsx}",
   ],
-  purge: [],
   theme: {
     extend: {
       colors: {
-        background_primary: "#F4E5CE", 
-        background_secondary: "#E4D29D",
-        foreground_primary: "#000000", 
-        foreground_secondary: "#77653E"
-      },    
+        background: "var(--background)",
+        text: "var(--text)",
+        headerBackground: "var(--header-background)",
+      },
       fontFamily: {
-        monomakh: ['Monomakh', 'sans-serif'],
         roboto: ['Roboto', 'sans-serif'],
-        robotoMono: ['Roboto Mono', 'monospace'],
+        monomakh: ['Monomakh', 'serif'],
+      },
+      typography: {
+        DEFAULT: {
+          css: {
+            body: {
+              fontFamily: 'Roboto, sans-serif',
+              fontWeight: 'normal',
+              backgroundColor: 'var(--background)',
+              color: 'var(--text)',
+              margin: '0',
+              padding: '0',
+            },
+            h1: {
+              fontFamily: 'Monomakh, serif',
+              textAlign: 'center',
+            },
+            h2: {
+              fontFamily: 'Monomakh, serif',
+              fontWeight: 'normal',
+              textAlign: 'center',
+              padding: '20px',
+            },
+            h3: {
+              fontFamily: 'Monomakh, serif',
+              textAlign: 'center',
+            },
+            h4: {
+              fontFamily: 'Monomakh, serif',
+              textAlign: 'center',
+            },
+            h5: {
+              fontFamily: 'Monomakh, serif',
+              textAlign: 'center',
+            },
+            h6: {
+              fontFamily: 'Monomakh, serif',
+              textAlign: 'center',
+            },
+            ".header": {
+              padding: "20px",
+              backgroundColor: "var(--header-background)",
+              borderRadius: "0 0 240px 100% / 240px",
+            },
+          },
+        },
       },
     },
   },
-  variants: {},
-  plugins: [],
-}
+  plugins: [require('@tailwindcss/typography')],
+};
