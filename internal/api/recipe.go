@@ -8,8 +8,10 @@ import (
 	"io/fs"
 	"net/http"
 	"os"
+	"text/template"
 
 	"github.com/gomarkdown/markdown"
+	"github.com/gorilla/mux"
 )
 
 func fileExists(path string) bool {
@@ -54,10 +56,8 @@ func htmlFileGenerator(recipeName string, content string, uuid string) (error) {
   htmlContent := markdown.ToHTML([]byte(content), nil, nil)
   
   templateContent := fmt.Sprintf(
-  `<template>  
-   <title> %s </title>
-  ` + string(htmlContent) + `
-   </template>`, recipeName)
+  `<title> %s </title>
+  ` + string(htmlContent) , recipeName)
 
   if !fileExists(htmlFile) {
     err := os.WriteFile(htmlFile, []byte(templateContent), fs.ModePerm)
@@ -133,5 +133,62 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
   w.WriteHeader(http.StatusOK)
+}
+
+func MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request) {
+  recipes, err := database.New().MostViewedRecipes()
+  if err != nil {
+    http.Error(w, "Can't get any recipes", http.StatusNotFound)
+  }
+
+  jsonData, err := json.Marshal(recipes)
+  if err != nil {
+    http.Error(w, "Can't Marshall json", http.StatusInternalServerError)
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonData)
+}
+
+func ServeRecipe(w http.ResponseWriter, r *http.Request) {
+
+  vars := mux.Vars(r)
+
+  db := database.New()
+
+  recipe, err := db.GetRecipe(vars["id"])
+
+  if err != nil {
+    http.Error(w, "Can't Render the Recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", err.Error())
+    return
+  }
+
+  fmt.Printf("Serving Recipe %s", recipe.Name) 
+
+  directoryPath := "upload/recipes/" + recipe.UUID + "/recipe.html"  
+
+  if !fileExists(directoryPath) {
+    http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", recipe.UUID)
+    return
+  } 
+
+  tmpl, err := template.ParseFiles(directoryPath)
+
+  err = tmpl.Execute(w, tmpl)
+  if err != nil {
+    http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", recipe.UUID)
+    return
+  } 
+
+  err = db.IncreaseRecipeViews(recipe)
+  if err != nil {
+    http.Error(w, "Can't increase recipe's views", http.StatusInternalServerError)
+    fmt.Printf("Can't increase recipe's views cause, %s", err.Error())
+    return
+  } 
 
 }

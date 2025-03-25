@@ -22,6 +22,7 @@ func (s *Server) RegisterRoutes() http.Handler {
   r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
 
   r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
+  r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
 
   // Data Handler
   r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")

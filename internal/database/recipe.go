@@ -16,7 +16,7 @@ func (s *service) AddRecipe(recipe *modals.Recipe) error {
 }
 
 func (s *service) GetRecipe(UUID string) (*modals.Recipe, error) {
-	var recipe *modals.Recipe
+	var recipe modals.Recipe
 
 	q := `
   SELECT * FROM recipes
@@ -30,5 +30,60 @@ func (s *service) GetRecipe(UUID string) (*modals.Recipe, error) {
 		return nil, err
 	}
 
-	return recipe, nil
+	return &recipe, nil
 }
+
+
+func (s *service) MostViewedRecipes() ([]modals.Recipe, error) {
+  var recipes []modals.Recipe
+
+  rows, err := s.db.Query("SELECT * FROM recipes ORDER BY views LIMIT 10;")
+  if err != nil {
+    return nil, err
+  }
+  defer rows.Close()
+
+  for rows.Next() {
+    var recipe modals.Recipe
+    err := rows.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
+    if err != nil {
+      return nil, err
+    }
+    recipes = append(recipes, recipe) 
+  }
+
+  return recipes, nil
+} 
+
+func (s *service) GetRecipeByName(name string) (*modals.Recipe, error) {
+  var recipe *modals.Recipe
+
+	q := `
+  SELECT * FROM recipes
+  WHERE name = $1;
+  `
+	row := s.db.QueryRow(q, name)
+	err := row.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return recipe, nil
+} 
+
+func (s *service) IncreaseRecipeViews(recipe *modals.Recipe) (error) {
+  q := `
+    UPDATE recipes 
+    SET views = views + 1
+    WHERE uuid = $1
+  `
+
+  _, err := s.db.Query(q, recipe.UUID)
+
+  if err != nil {
+    return err
+  }
+
+  return nil
+} 

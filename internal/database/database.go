@@ -32,6 +32,9 @@ type Service interface {
   // Recipe
   AddRecipe(recipe *modals.Recipe) error 
   GetRecipe(UUID string) (*modals.Recipe, error) 
+  GetRecipeByName(UUID string) (*modals.Recipe, error) 
+  MostViewedRecipes() ([]modals.Recipe, error) 
+  IncreaseRecipeViews(recipe *modals.Recipe) (error) 
 
 	// Health returns a map of health status information.
 	// The keys and values in the map are service-specific.

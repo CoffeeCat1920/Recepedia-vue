@@ -5,6 +5,7 @@ import Signup from './views/Signup.vue';
 import Login from './views/Login.vue';
 import Dashboard from './views/Dashboard.vue';
 import UploadRecipe from './views/UploadRecipe.vue';
+import Recipe from './views/Recipe.vue'
 
 const routes = [
   { path: '/', component: Home },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/login', component: Login },
   { path: '/dashboard', component: Dashboard },
   { path: '/uploadrecipe', component: UploadRecipe },
+  { path: '/recipe/:id', component: Recipe},
 ];
 
 const router = createRouter({
