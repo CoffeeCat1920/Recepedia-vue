@@ -2,6 +2,8 @@
 
 <script setup>
   import Brand from '@/components/Brand.vue';
+  import Recommendation from '@/components/RecipeRecommendation.vue';
+  import Searchbar from '@/components/Searchbar.vue';
 </script>
 
 <template>
@@ -14,22 +16,8 @@
 
         <Brand />
 
-        <div class="flex flex-col items-center">
+        <Searchbar />
 
-          <form class="flex flex-col mt-20" action="/view/search" >
-
-            <input class="f-input" name="search" type="text" placeholder="Search" aria-label="Search">
-
-            <div class="relative inline-block mt-10">
-              <button type="submit" class="taped-button">Search</button> 
-              
-              <div class="tape tape-top"></div>
-              <div class="tape tape-bottom"></div>
-            </div>
-
-          </form>
-
-        </div>
 
       </div>
 
@@ -37,6 +25,6 @@
 
   </div>
 
-  <h2 class="text-center text-amber-900 font-[Monomakh] font-bold text-3xl pt-20">Most Viewed</h2>
+  <Recommendation />
 
 </template>
