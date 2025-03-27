@@ -13,7 +13,7 @@ const props = defineProps({
   <div class="flex">
     <RouterLink :to="`/recipe/${uuid}`" class="recipe-card">
       <div class="card-container relative hover:scale-110 transition-transform cursor-pointer">
-        <div class="card-content h-52 w-60">
+        <div class="card-content h-64 w-60">
           <h3 class="recipe-name font-monomakh text-center text-2xl text-amber-950">{{ name }}</h3>
           <p class="recipe-views absolute bottom-2 left-2 text-sm text-amber-900">Views: {{ views }}</p>
         </div>

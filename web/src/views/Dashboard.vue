@@ -1,35 +1,21 @@
-<script>
-  export default {
-    data() {
-      return {
-        user: null,
-        loggedIn: false,
-      }
-    },    
-    async mounted() {
-      try {
-        const response = await fetch("/api/data/login", {
-          credentials: "include",
-          method: "GET",
-        });
+<script setup>
 
-        if (!response.ok) throw new Error("Unauthorized");
+  import { ref } from 'vue'
+  import { useRoute } from 'vue-router'
 
-        const data = await response.json();
+  const router = useRoute()
+  
 
-        this.user = data.name;  
-        this.loggedIn = data.loggedIn;
-
-      } catch (error) {
-        console.error("Error fetching login info:", error);
-      }
-    }
-  }
 </script>
 
 <template>
-  <div v-if="loggedIn">
-    <h1>Hello, {{ user }}!</h1>
-    <h2>Your Recipes</h2>
+
+  <div class="flex flex-col">
+
+    <!-- <div v-if="loggedIn"> -->
+    <!--   <h1 class="text-amber-950 font-monomakh text-6xl text-center pt-12">{{ user }}</h1> -->
+    <!-- </div> -->
+
   </div>
+
 </template>

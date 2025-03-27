@@ -12,12 +12,11 @@
 
     <div class="card-container">
       
-      <div class="card-content px-100">
+      <div class="card-content pt-10 px-100">
 
         <Brand />
 
         <Searchbar />
-
 
       </div>
 
