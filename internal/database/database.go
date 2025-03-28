@@ -14,10 +14,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 )
 
-// Service represents a service that interacts with a database.
 type Service interface {
-	// Actual funcitons to be used
-	// The functions for modals
 
   // User Functions
   AddUser(user *modals.User) error 
@@ -35,13 +32,12 @@ type Service interface {
   GetRecipeByName(UUID string) (*modals.Recipe, error) 
   MostViewedRecipes() ([]modals.Recipe, error) 
   IncreaseRecipeViews(recipe *modals.Recipe) (error) 
+  SearchRecipe(name string) ([]modals.Recipe, error) 
+  GetRecipesByUser(uuid string) ([]modals.Recipe, error) 
+  DeleteRecipe(uuid string) error 
 
-	// Health returns a map of health status information.
-	// The keys and values in the map are service-specific.
 	Health() map[string]string
 
-	// Close terminates the database connection.
-	// It returns an error if the connection cannot be closed.
 	Close() error
 }
 
@@ -75,8 +71,6 @@ func New() Service {
 	return dbInstance
 }
 
-// Health checks the health of the database connection by pinging the database.
-// It returns a map with keys indicating various health statistics.
 func (s *service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()

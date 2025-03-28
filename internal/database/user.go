@@ -66,3 +66,16 @@ func (s *service) GetUserByUUid(uuid string) (*modals.User, error) {
 
   return &user, nil
 }
+
+
+func (s *service) GetUserUUid(name string) (string, error) {
+  var user modals.User
+
+  query := "SELECT * FROM users WHERE name = $1"
+  err := s.db.QueryRow(query, name).Scan(&user.UUID, &user.Name, &user.Password)
+  if err != nil {
+    return "", err
+  }
+  
+  return user.UUID, nil
+}

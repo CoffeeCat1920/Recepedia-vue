@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
 func auth(r *http.Request) (*modals.Session, error) {
@@ -129,6 +131,54 @@ func LoginInfoHandler(w http.ResponseWriter, r *http.Request) {
   json.NewEncoder(w).Encode(loginInfo)
 } 
 
+func LoginRecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
+
+  session, err := auth(r) 
+
+  var recipes []modals.Recipe 
+
+  if err != nil {
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusUnauthorized)
+    json.NewEncoder(w).Encode(recipes)
+
+    fmt.Printf("Can't get session in db cause, %s\n", err.Error())
+    return
+  }
+ 
+  user, err := database.New().GetUserByUUid(session.OwnerId)
+  if err != nil {
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusUnauthorized)
+    json.NewEncoder(w).Encode(recipes)
+
+    fmt.Printf("Can't get user in db cause, %s\n", err.Error())
+    return
+  }
+
+  recipes, err = database.New().GetRecipesByUser(user.Name)
+  if err != nil {
+
+    w.Header().Set("Content-Type", "application/json")
+    w.WriteHeader(http.StatusUnauthorized)
+    json.NewEncoder(w).Encode(recipes)
+
+    fmt.Printf("Can't get recipes in db cause, %s\n", err.Error())
+    return
+  }
+
+  jsonData, err := json.Marshal(recipes)
+  if err != nil {
+    http.Error(w, "Can't Marshall json", http.StatusInternalServerError)
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonData)
+}
+
 
 func Auth( next http.HandlerFunc ) http.HandlerFunc {
   return func(w http.ResponseWriter, r *http.Request) {
@@ -140,4 +190,37 @@ func Auth( next http.HandlerFunc ) http.HandlerFunc {
 
     next(w, r)
   }
+}
+
+func authSameUser(r *http.Request) (bool) {
+  // Getting the recipe
+  vars := mux.Vars(r)
+  recipeUUID := vars["id"] 
+  recipe, err := database.New().GetRecipe(recipeUUID)
+	if err != nil {                                                                                                                                                                                       
+		fmt.Println("Can't find Recipe To Edit")
+		return false
+	}
+ 
+	// Get session token
+	c, err := r.Cookie("session-token")
+	if err != nil {
+		fmt.Println("Can't find Cookie")
+		return false
+	}
+
+	// Get user session
+	session, err := database.New().GetSession(c.Value)
+	if err != nil {
+		fmt.Printf("Can't find Session %s\n", c.Value)
+		return false
+	}
+  
+  // Verify the permission 
+  if !(recipe.OwnerId == session.OwnerId) {
+		fmt.Printf("You don't have ther permission to edit the recipe\n")
+		return false
+  }
+
+  return true
 }

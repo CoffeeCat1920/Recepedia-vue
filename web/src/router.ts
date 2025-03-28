@@ -16,7 +16,7 @@ const routes = [
   { path: '/dashboard', component: Dashboard },
   { path: '/uploadrecipe', component: UploadRecipe },
   { path: '/recipe/:id', component: Recipe},
-  { path: '/search/:name', component: Search},
+  { path: '/search', component: Search},
 ];
 
 const router = createRouter({

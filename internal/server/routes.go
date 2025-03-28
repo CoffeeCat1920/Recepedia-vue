@@ -21,12 +21,16 @@ func (s *Server) RegisterRoutes() http.Handler {
   r.HandleFunc("/login", api.LoginHandler).Methods("POST")
   r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
 
+  // Recipes
   r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
   r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
+  r.HandleFunc("/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
   r.HandleFunc("/data/recipe/mostviewed", api.MostViewedRecipesHandler).Methods("GET") 
+  r.HandleFunc("/data/recipe/search", api.SearchRecipeHandler).Methods("GET")
 
   // Data Handler
   r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")
+  r.HandleFunc("/data/login/recipes", api.LoginRecipeInfoHandler).Methods("GET")
 
   // Debugging
 	r.HandleFunc("/health", s.healthHandler)

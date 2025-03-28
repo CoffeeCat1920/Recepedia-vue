@@ -135,11 +135,58 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
   w.WriteHeader(http.StatusOK)
 }
 
+func DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+  recipeUUID := vars["id"] 
+
+	directoryPath := "web/recipes/" + recipeUUID
+
+  if !(authSameUser(r)) {
+		fmt.Println("Doesn't have the permission to edit recipe")
+		http.Error(w, "Doesn't have the permission to edit recipe", http.StatusInternalServerError)
+		return
+  }
+
+  err := database.New().DeleteRecipe(recipeUUID) 
+	if err != nil {
+		fmt.Printf("Can't find Recipe To Edit cause, %s", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+  err = os.RemoveAll(directoryPath)
+  
+  w.WriteHeader(http.StatusOK)
+}
+
 func MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request) {
   recipes, err := database.New().MostViewedRecipes()
   if err != nil {
     http.Error(w, "Can't get any recipes", http.StatusNotFound)
   }
+
+  jsonData, err := json.Marshal(recipes)
+  if err != nil {
+    http.Error(w, "Can't Marshall json", http.StatusInternalServerError)
+  }
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonData)
+}
+
+func SearchRecipeHandler(w http.ResponseWriter, r *http.Request) {
+
+  searchterm := r.URL.Query().Get("searchTerm")
+
+  fmt.Printf("\n%s\n", searchterm)
+
+  recipes, err := database.New().SearchRecipe(searchterm)
+  if err != nil {
+    http.Error(w, "No recipes found", http.StatusInternalServerError)
+    fmt.Printf("Can't get the searched recipes, %s", err.Error())
+    return
+  } 
 
   jsonData, err := json.Marshal(recipes)
   if err != nil {
@@ -191,4 +238,29 @@ func ServeRecipe(w http.ResponseWriter, r *http.Request) {
     return
   } 
 
+}
+
+func GetRecipeByUser(w http.ResponseWriter, r *http.Request) {
+  name := r.URL.Query().Get("name")
+
+  var recipes []modals.Recipe
+
+  db := database.New()
+
+  recipes, err := db.GetRecipesByUser(name)
+  if err != nil {
+    http.Error(w, `{"error": "Failed to fetch recipes"}`, http.StatusInternalServerError)
+    return
+  }
+
+  jsonData, err := json.Marshal(recipes)
+  if err != nil {
+    http.Error(w, `{"error": "Failed to encode response"}`, http.StatusInternalServerError)
+    return
+  }
+
+  // Success response
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonData)
 }
