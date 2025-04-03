@@ -24,9 +24,12 @@ func (s *Server) RegisterRoutes() http.Handler {
   // Recipes
   r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
   r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
+	r.HandleFunc("/recipe/{id}", api.EditRecipeHandler).Methods("PATCH")
   r.HandleFunc("/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
   r.HandleFunc("/data/recipe/mostviewed", api.MostViewedRecipesHandler).Methods("GET") 
   r.HandleFunc("/data/recipe/search", api.SearchRecipeHandler).Methods("GET")
+	r.HandleFunc("/data/recipe/name/{id}", api.RecipeInfoHandler).Methods("GET")
+	r.HandleFunc("/data/recipe/content/{id}", api.RecipeMdContent).Methods("GET")
 
   // Data Handler
   r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")

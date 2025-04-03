@@ -69,6 +69,36 @@ func htmlFileGenerator(recipeName string, content string, uuid string) (error) {
   return nil
 }
 
+func deleteRecipeFiles(uuid string) (error) {
+	directoryPath := "upload/recipes/" + uuid 
+	if !fileExists(directoryPath) {
+    fmt.Printf("Recipe Directory Doesn't Exists, %s \n", directoryPath)
+    return fmt.Errorf("Recipe Directory Doesn't Exists, %s", directoryPath) 
+	}
+	
+	mdPath := directoryPath + "/recipe.md"
+	if !fileExists(mdPath) {
+    fmt.Printf("Recipe mdFile Doesn't Exists, %s \n", directoryPath)
+    return fmt.Errorf("Recipe mdFile Doesn't Exists, %s", directoryPath) 
+	}
+	err := os.Remove(mdPath)
+	if err != nil {
+		return err
+	}
+
+	htmlFile := directoryPath + "/recipe.html"
+	if !fileExists(htmlFile) {
+    fmt.Printf("Recipe mdFile Doesn't Exists, %s \n", directoryPath)
+    return fmt.Errorf("Recipe mdFile Doesn't Exists, %s", directoryPath) 
+	}
+	err = os.Remove(htmlFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func UploadRecipe(w http.ResponseWriter, r *http.Request) {
   
   var recipeInfo RecipeInfo 
@@ -132,14 +162,62 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+
+
   w.WriteHeader(http.StatusOK)
+}
+
+func EditRecipeHandler(w http.ResponseWriter, r* http.Request) {
+  vars := mux.Vars(r)
+  recipeUUID := vars["id"] 
+
+	fmt.Printf("%s", recipeUUID)
+  var recipeInfo RecipeInfo 
+	
+  err := json.NewDecoder(r.Body).Decode(&recipeInfo) 
+	if err != nil {
+		fmt.Printf("Can't parse Json cause %s \n", err)
+		http.Error(w, "Bad JSON provided", http.StatusBadRequest)
+		return
+	}
+
+	err = deleteRecipeFiles(recipeUUID)
+	if err != nil {
+		fmt.Printf("Can't delete filese cause, %s \n", err)
+		http.Error(w, "Can't delete recipe files", http.StatusInternalServerError)
+		return
+	}
+
+  err = mdFileGenreator(recipeInfo.Content, recipeUUID)
+	if err != nil {
+		fmt.Printf("Can't generate md cause %s \n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = htmlFileGenerator(recipeInfo.Name, recipeInfo.Content, recipeUUID)
+	if err != nil {
+		fmt.Printf("Can't generate html cause, %s \n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	err = database.New().EditRecipeName(recipeUUID, recipeInfo.Name)
+	fmt.Printf("Provided recipe name, %s", recipeInfo.Name)
+	if err != nil {
+		fmt.Printf("Can't change recipe name cause, %s \n", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+	
+	w.WriteHeader(http.StatusOK)
 }
 
 func DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
   vars := mux.Vars(r)
   recipeUUID := vars["id"] 
 
-	directoryPath := "web/recipes/" + recipeUUID
+	directoryPath := "upload/recipes/" + recipeUUID
 
   if !(authSameUser(r)) {
 		fmt.Println("Doesn't have the permission to edit recipe")
@@ -149,12 +227,23 @@ func DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 
   err := database.New().DeleteRecipe(recipeUUID) 
 	if err != nil {
-		fmt.Printf("Can't find Recipe To Edit cause, %s", err.Error())
+		fmt.Printf("Can't find Recipe To Delete cause, %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	if !fileExists(directoryPath) {
+		fmt.Printf("Can't find recipe directory  to delete in path, %s\n", directoryPath)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
   err = os.RemoveAll(directoryPath)
+	if err != nil {
+		fmt.Printf("Can't find Delete recipe cause, %s\n", err.Error())
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
   
   w.WriteHeader(http.StatusOK)
 }
@@ -238,6 +327,72 @@ func ServeRecipe(w http.ResponseWriter, r *http.Request) {
     return
   } 
 
+}
+
+func RecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
+  vars := mux.Vars(r)
+
+  db := database.New()
+
+  recipe, err := db.GetRecipe(vars["id"])
+
+  if err != nil {
+    http.Error(w, "Can't Render the Recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", err.Error())
+    return
+  }
+
+  fmt.Printf("Editing Recipe %s", recipe.Name) 
+
+  filePath := "upload/recipes/" + recipe.UUID + "/recipe.md"  
+
+  if !fileExists(filePath) {
+    http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
+    fmt.Printf("\nCan't get the most viewed recipes cause, %s\n", recipe.UUID)
+    return
+  } 
+
+	jsonData, err := json.Marshal(recipe.Name)	
+	if err != nil {
+		http.Error(w, `{error: "Failed to fetch recipes"}`, http.StatusInternalServerError)
+		return
+	}
+
+  w.Header().Set("Content-Type", "application/json")
+  w.WriteHeader(http.StatusOK)
+  w.Write(jsonData)
+}
+
+func RecipeMdContent(w http.ResponseWriter, r* http.Request) {
+
+  vars := mux.Vars(r)
+
+  db := database.New()
+
+  recipe, err := db.GetRecipe(vars["id"])
+
+  if err != nil {
+    http.Error(w, "Can't Render the Recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", err.Error())
+    return
+  }
+
+  fmt.Printf("Serving Recipe %s", recipe.Name) 
+
+  directoryPath := "upload/recipes/" + recipe.UUID + "/recipe.md"  
+
+  if !fileExists(directoryPath) {
+    http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
+    fmt.Printf("Can't get the most viewed recipes cause, %s", recipe.UUID)
+    return
+  } 
+	
+	content, err := os.ReadFile(directoryPath)	
+	mdContent := string(content)
+
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(mdContent))
 }
 
 func GetRecipeByUser(w http.ResponseWriter, r *http.Request) {

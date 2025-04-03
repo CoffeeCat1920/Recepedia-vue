@@ -1,1 +1,0 @@
-# Please Write in md: [Guid](https://www.markdownguide.org/basic-syntax/)

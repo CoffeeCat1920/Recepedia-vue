@@ -35,6 +35,7 @@ type Service interface {
   SearchRecipe(name string) ([]modals.Recipe, error) 
   GetRecipesByUser(uuid string) ([]modals.Recipe, error) 
   DeleteRecipe(uuid string) error 
+	EditRecipeName(uuid string, name string) (error) 
 
 	Health() map[string]string
 

@@ -127,6 +127,22 @@ func (s *service) IncreaseRecipeViews(recipe *modals.Recipe) (error) {
   return nil
 } 
 
+func (s *service) EditRecipeName(uuid string, name string) (error) {
+	q := `
+		UPDATE recipes
+		SET name = $1
+		WHERE uuid = $2
+	`	
+
+	_, err := s.db.Exec(q, name, uuid)
+
+  if err != nil {
+    return err
+  }
+
+  return nil
+}   
+
 func (s *service) GetRecipesByUser(name string) ([]modals.Recipe, error) {
   var recipes []modals.Recipe
 

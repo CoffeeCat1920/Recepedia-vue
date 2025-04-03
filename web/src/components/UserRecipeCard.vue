@@ -1,6 +1,6 @@
 <script setup>
   import { defineProps, watch } from "vue";
-  import { RouterLink } from "vue-router";
+  import { useRouter, RouterLink } from "vue-router";
 
   const props = defineProps({
     name: String,
@@ -8,9 +8,11 @@
     views: Number,
   });
 
+  const router = useRouter();
+
   const deleteRecipes = async (id) => {
     try {  
-      const response = await fetch(`http://localhost:8080/recipe/delete/${id} `, {
+      const response = await fetch(`/api/recipe/delete/${id} `, {
         method: 'PATCH',
         credentials: "include",
       });
@@ -20,10 +22,17 @@
       }
 
       console.log(`Recipe with ID ${id} deleted successfully.`);
+
+      location.reload();
     } catch (error) {
       console.error('Error:', error);
     }
   }; 
+
+  const editRecipe = async (id) => {
+    router.push(`/editrecipe/${id}`);
+  }
+
 </script>
 
 <template>
@@ -40,7 +49,11 @@
         </div>
 
         <div class="absolute bottom-2 right-2 flex flex-col space-y-1">
-          <button class="text-sm bg-blue-400 shadow-md shadow-amber-900 hover:scale-120 rotate-3 hover:rotate-10 transition-transform">Edit</button>
+          <button 
+            class="text-sm bg-blue-400 shadow-md shadow-amber-900 hover:scale-120 rotate-3 hover:rotate-10 transition-transform"
+            @click="editRecipe(uuid)">
+            Edit
+          </button>
           <br>
           <!-- Fixed: Removed {{ }} inside @click handler -->
           <button 

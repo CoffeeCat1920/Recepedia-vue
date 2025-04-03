@@ -7,7 +7,7 @@ const recipeId = ref(route.params.id);
 const recipe = ref(null);
 
 const getRecipe = async () => {
-  if (!recipeId.value) return; // Prevent unnecessary fetch calls
+  if (!recipeId.value) return; 
 
   try {
     const response = await fetch('/api/recipe/' + recipeId.value, {
@@ -15,7 +15,7 @@ const getRecipe = async () => {
     });
 
     if (response.ok) {
-      recipe.value = await response.text(); // Store response in state
+      recipe.value = await response.text(); 
       console.log('Got the recipe', recipe.value);
     } else {
       console.error('Didn\'t get the recipe');
