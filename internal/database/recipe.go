@@ -198,15 +198,27 @@ func (s *service) NumberOfRecipes() int {
 func (s *service) GetAllRecipes() ([]modals.Recipe, error) {
 	var recipes []modals.Recipe
 
-	q := `
-		SELECT * FROM recipes;
-	`
+	q := `SELECT * FROM recipes;`
 
-	err := s.db.QueryRow(q).Scan(recipes)
-
+	rows, err := s.db.Query(q)
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 
+	for rows.Next() {
+		var recipe modals.Recipe
+		err := rows.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views) // Adjust fields as per your Recipe struct
+		if err != nil {
+			return nil, err
+		}
+		recipes = append(recipes, recipe)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Return the slice of recipes
 	return recipes, nil
 }

@@ -23,7 +23,9 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Admin Session/Management
 	r.HandleFunc("/admin/login", api.VerifyAdmin).Methods("POST")
 	r.HandleFunc("/admin/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
+	r.HandleFunc("/admin/user/delete/{id}", api.DeleteUserHandler).Methods("PATCH")
 	r.HandleFunc("/data/admin/allrecipes", api.GetAllRecipesHandler).Methods("GET")
+	r.HandleFunc("/data/admin/allusers", api.GetAllUsersHandler).Methods("GET")
 
 	// Recipe Management
 	r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")

@@ -64,3 +64,24 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusOK)
 }
+
+func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+	users, err := database.New().GetAllUsers()
+
+	if err != nil {
+		http.Error(w, "Can't get any recipes", http.StatusNotFound)
+		fmt.Printf("Can't get all the recipes cause, %s", err.Error())
+		return
+	}
+
+	jsonData, err := json.Marshal(users)
+	if err != nil {
+		http.Error(w, "Can't Marshall json", http.StatusInternalServerError)
+		fmt.Printf("Can't get all the recipes cause, %s", err.Error())
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write(jsonData)
+}

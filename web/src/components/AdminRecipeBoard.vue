@@ -9,7 +9,7 @@ const fetchRecipes = async () => {
 
   try {
 
-    const response = await fetch('/data/admin/allrecipes', {
+    const response = await fetch('/api/data/admin/allrecipes', {
       credentials: "include",
       method: "GET",
     });
@@ -39,5 +39,8 @@ onMounted(fetchRecipes);
       <Card :name="recipe.name" :views="recipe.views" :uuid="recipe.uuid" />
     </div>
   </div>
+
+
+  <p v-html="recipes"></p>
 
 </template>

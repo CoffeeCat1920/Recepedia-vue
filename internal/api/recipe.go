@@ -422,11 +422,15 @@ func GetAllRecipesHandler(w http.ResponseWriter, r *http.Request) {
 	recipes, err := database.New().GetAllRecipes()
 	if err != nil {
 		http.Error(w, "Can't get any recipes", http.StatusNotFound)
+		fmt.Printf("Can't get all the recipes cause, %s", err.Error())
+		return
 	}
 
 	jsonData, err := json.Marshal(recipes)
 	if err != nil {
 		http.Error(w, "Can't Marshall json", http.StatusInternalServerError)
+		fmt.Printf("Can't get all the recipes cause, %s", err.Error())
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

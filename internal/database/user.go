@@ -102,3 +102,32 @@ func (s *service) NumberOfUsers() int {
 
 	return numberOfUsers
 }
+
+func (s *service) GetAllUsers() ([]modals.User, error) {
+	var users []modals.User
+
+	q := `SELECT * FROM users;`
+
+	rows, err := s.db.Query(q)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var user modals.User
+		err := rows.Scan(&user.UUID, &user.Name, &user.Password) // Adjust fields as per your Recipe struct
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, user)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	// Return the slice of recipes
+	return users, nil
+
+}

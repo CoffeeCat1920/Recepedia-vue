@@ -22,6 +22,7 @@ type Service interface {
 	GetUserByUUid(uuid string) (*modals.User, error)
 	DeleteUserByUUid(uuid string) error
 	NumberOfUsers() int
+	GetAllUsers() ([]modals.User, error)
 
 	// Session Functions
 	AddSession(session *modals.Session) error

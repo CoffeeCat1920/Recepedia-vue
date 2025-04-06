@@ -1,5 +1,5 @@
-<script>
-import DashboardRecipes from '@/components/AdminRecipeBoard.vue';
+<script setup>
+import Recipes from '@/components/AdminRecipeBoard.vue';
 </script>
 
 <template>
@@ -7,5 +7,5 @@ import DashboardRecipes from '@/components/AdminRecipeBoard.vue';
     <h1 class="text-6xl font-bold text-amber-900 font-[Monomakh] pt-[100px]">Edit Recipes</h1>
   </div>
 
-  <DashboardRecipes />
+  <Recipes />
 </template>
