@@ -97,6 +97,7 @@ func LoginInfoHandler(w http.ResponseWriter, r *http.Request) {
 
   loginInfo := &LoginInfo{
     User: "",  
+		UUID : "",
     LoggedIn: false, 
   }
 
@@ -123,6 +124,7 @@ func LoginInfoHandler(w http.ResponseWriter, r *http.Request) {
 
   loginInfo = &LoginInfo{
     User: user.Name,  
+		UUID: user.UUID,
     LoggedIn: true, 
   }
 
@@ -223,4 +225,23 @@ func authSameUser(r *http.Request) (bool) {
   }
 
   return true
+}
+
+func createAdminCookie(w http.ResponseWriter) (*modals.AdminSession) {
+  session := modals.NewAdminSession()
+  exp, err := session.GetExpTime()
+  if err != nil {
+    panic(err)
+  }
+
+  http.SetCookie(w, &http.Cookie{
+    Name: "admin-session-token",
+    Value: session.SessionId,
+    Expires: exp,
+    Path:     "/",           // Add this
+    Domain:   "",
+    HttpOnly: true,          // Add this
+    SameSite: http.SameSiteLaxMode,  // Add this
+  })
+  return session
 }

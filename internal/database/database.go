@@ -16,26 +16,36 @@ import (
 
 type Service interface {
 
-  // User Functions
-  AddUser(user *modals.User) error 
-  GetUserByName(name string) (*modals.User, error) 
-  GetUserByUUid(uuid string) (*modals.User, error) 
+	// User Functions
+	AddUser(user *modals.User) error
+	GetUserByName(name string) (*modals.User, error)
+	GetUserByUUid(uuid string) (*modals.User, error)
+	DeleteUserByUUid(uuid string) error
+	NumberOfUsers() int
 
-  // Session Functions
-  AddSession(session *modals.Session) (error) 
-  GetSession(sessionId string) (*modals.Session, error) 
-  DeleteSession(sessionId string) (error) 
+	// Session Functions
+	AddSession(session *modals.Session) error
+	GetSession(sessionId string) (*modals.Session, error)
+	DeleteSession(sessionId string) error
+	DeleteSessionByUser(ownerId string) error
 
-  // Recipe
-  AddRecipe(recipe *modals.Recipe) error 
-  GetRecipe(UUID string) (*modals.Recipe, error) 
-  GetRecipeByName(UUID string) (*modals.Recipe, error) 
-  MostViewedRecipes() ([]modals.Recipe, error) 
-  IncreaseRecipeViews(recipe *modals.Recipe) (error) 
-  SearchRecipe(name string) ([]modals.Recipe, error) 
-  GetRecipesByUser(uuid string) ([]modals.Recipe, error) 
-  DeleteRecipe(uuid string) error 
-	EditRecipeName(uuid string, name string) (error) 
+	// Admin Sessions
+	AddAdminSession(session *modals.AdminSession) error
+	GetAdminSession(sessionId string) (*modals.AdminSession, error)
+
+	// Recipe
+	AddRecipe(recipe *modals.Recipe) error
+	GetRecipe(UUID string) (*modals.Recipe, error)
+	GetRecipeByName(UUID string) (*modals.Recipe, error)
+	MostViewedRecipes() ([]modals.Recipe, error)
+	IncreaseRecipeViews(recipe *modals.Recipe) error
+	SearchRecipe(name string) ([]modals.Recipe, error)
+	GetRecipesByUser(uuid string) ([]modals.Recipe, error)
+	DeleteRecipe(uuid string) error
+	EditRecipeName(uuid string, name string) error
+	DeleteRecipeByUser(userUUid string) error
+	NumberOfRecipes() int
+	GetAllRecipes() ([]modals.Recipe, error)
 
 	Health() map[string]string
 
@@ -131,15 +141,15 @@ func (s *service) Close() error {
 }
 
 func (s *service) doesExists(value, attribute, table string) bool {
-  q := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE %s = $1)", table, attribute)
+	q := fmt.Sprintf("SELECT EXISTS(SELECT 1 FROM %s WHERE %s = $1)", table, attribute)
 
-  var exists bool
-  err := s.db.QueryRow(q, value).Scan(&exists)
+	var exists bool
+	err := s.db.QueryRow(q, value).Scan(&exists)
 
-  if err != nil {
-    fmt.Println("Error checking existence:", err)
-    return false
-  }
+	if err != nil {
+		fmt.Println("Error checking existence:", err)
+		return false
+	}
 
-  return exists
+	return exists
 }

@@ -14,6 +14,7 @@ const logout = async () => {
 
 onMounted(async () => {
   await auth.checkLogin();
+  await auth.checkAdminLogin();
 });
 </script>
 
@@ -24,8 +25,8 @@ onMounted(async () => {
       •ᴗ• Recipidia
     </router-link>
 
-    <!-- Navigation Links -->
-    <div class="hidden md:flex space-x-6">
+    <!-- Navigation Cards -->
+    <div class="md:flex space-x-6">
       <router-link to="/" class="text-gray-700 hover:text-black font-medium">Home</router-link>
       <router-link to="/about" class="text-gray-700 hover:text-black font-medium">About</router-link>
 
@@ -39,14 +40,12 @@ onMounted(async () => {
         <router-link to="/signup" class="text-blue-600 hover:text-blue-800 font-medium">Sign Up</router-link>
         <router-link to="/login" class="text-blue-600 hover:text-blue-800 font-medium">Log In</router-link>
       </template>
-    </div>
 
-    <!-- Mobile Menu Button -->
-    <button class="md:hidden text-gray-700 focus:outline-none">
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-      </svg>
-    </button>
+      <template v-if="auth.adminLoggedIn">
+        <router-link to="/admindashboard" class="text-blue-600 hover:text-blue-800 font-medium">Admin Menu</router-link>
+      </template>
+
+    </div>
 
   </nav>
 </template>

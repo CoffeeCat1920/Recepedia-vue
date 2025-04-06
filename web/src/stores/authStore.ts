@@ -3,10 +3,13 @@ import { defineStore } from "pinia";
 import type { Router } from "vue-router";
 
 export const useAuthStore = defineStore("auth", {
+
   state: () => ({
     user: "",
     loggedIn: false,
+    adminLoggedIn: false,
   }),
+
   actions: {
     async checkLogin() {
       try {
@@ -20,6 +23,22 @@ export const useAuthStore = defineStore("auth", {
         const data = await response.json();
         this.user = data.User;
         this.loggedIn = true;
+      } catch (error) {
+        console.error("Login check failed", error);
+      }
+    },
+
+    async checkAdminLogin() {
+      try {
+        const response = await fetch("/api/data/admin/login", { credentials: "include" });
+        if (!response.ok) {
+          this.user = "";
+          this.loggedIn = false;
+          return
+        } 
+        
+        const data = await response.json();
+        this.adminLoggedIn = true;
       } catch (error) {
         console.error("Login check failed", error);
       }
@@ -49,6 +68,28 @@ export const useAuthStore = defineStore("auth", {
       }
 
     },
+
+    async adminLogin(password : string, router : Router) {
+      try {
+        const response = await fetch("/api/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ password }),
+        });
+
+        if (!response.ok) {
+          router.push('/adminlogin');
+          return;
+        } 
+
+        this.adminLoggedIn = true;
+        router.push('/admindashboard');
+      } catch (error) {
+        console.error("Login error", error);
+      }
+    },
+
     async logout(router : Router) {
       try {
         const response = await fetch("/api/logout", { method: "POST", credentials: "include" });
@@ -62,5 +103,6 @@ export const useAuthStore = defineStore("auth", {
         console.error("Logout error", error);
       }
     },
+
   },
 });

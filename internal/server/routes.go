@@ -15,27 +15,36 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Apply CORS middleware
 	r.Use(s.corsMiddleware)
 
-  // Api Handler
-  // Session
-  r.HandleFunc("/signup", api.SignUpHandler).Methods("POST")
-  r.HandleFunc("/login", api.LoginHandler).Methods("POST")
-  r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
+	// Session/Authentication
+	r.HandleFunc("/signup", api.SignUpHandler).Methods("POST")
+	r.HandleFunc("/login", api.LoginHandler).Methods("POST")
+	r.HandleFunc("/logout", api.LogoutHandler).Methods("POST")
 
-  // Recipes
-  r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
-  r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
+	// Admin Session/Management
+	r.HandleFunc("/admin/login", api.VerifyAdmin).Methods("POST")
+	r.HandleFunc("/admin/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
+	r.HandleFunc("/data/admin/allrecipes", api.GetAllRecipesHandler).Methods("GET")
+
+	// Recipe Management
+	r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
+	r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
 	r.HandleFunc("/recipe/{id}", api.EditRecipeHandler).Methods("PATCH")
-  r.HandleFunc("/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
-  r.HandleFunc("/data/recipe/mostviewed", api.MostViewedRecipesHandler).Methods("GET") 
-  r.HandleFunc("/data/recipe/search", api.SearchRecipeHandler).Methods("GET")
+	r.HandleFunc("/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
+	r.HandleFunc("/data/recipe/mostviewed", api.MostViewedRecipesHandler).Methods("GET")
+	r.HandleFunc("/data/recipe/search", api.SearchRecipeHandler).Methods("GET")
 	r.HandleFunc("/data/recipe/name/{id}", api.RecipeInfoHandler).Methods("GET")
 	r.HandleFunc("/data/recipe/content/{id}", api.RecipeMdContent).Methods("GET")
 
-  // Data Handler
-  r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")
-  r.HandleFunc("/data/login/recipes", api.LoginRecipeInfoHandler).Methods("GET")
+	// User Management
+	r.HandleFunc("/user/{id}", api.DeleteUserHandler).Methods("DELETE")
 
-  // Debugging
+	// Data Handlers
+	r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")
+	r.HandleFunc("/data/login/recipes", api.LoginRecipeInfoHandler).Methods("GET")
+	r.HandleFunc("/data/admin/login", api.AdminLoginInfoHandler).Methods("GET")
+	r.HandleFunc("/data/admin/dashboard", api.AdminDashboardDataHandler).Methods("GET")
+
+	// Debugging
 	r.HandleFunc("/health", s.healthHandler)
 
 	return r
@@ -65,7 +74,6 @@ func (s *Server) corsMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
 
 func (s *Server) HelloWorldHandler(w http.ResponseWriter, r *http.Request) {
 	resp := make(map[string]string)

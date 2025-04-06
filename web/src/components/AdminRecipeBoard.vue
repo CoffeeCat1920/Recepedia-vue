@@ -1,27 +1,24 @@
 <script setup>
 
 import { ref, onMounted, defineProps, watch } from 'vue';
-import Card from '@/components/ViewRecipeCard.vue';
+import Card from '@/components/AdminRecipeCard.vue';
 
 const recipes = ref([]);
-
-const props = defineProps({
-  searchTerm: String,
-});
 
 const fetchRecipes = async () => {
 
   try {
 
-    const response = await fetch(`/api/data/recipe/search?searchTerm=${encodeURIComponent(props.searchTerm)}`, {
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
+    const response = await fetch('/data/admin/allrecipes', {
+      credentials: "include",
+      method: "GET",
     });
 
     if (!response.ok) throw new Error('Failed to fetch');
 
     const data = await response.json();
     recipes.value = data;
+    console.log(recipes)
 
   } catch (error) {
 
@@ -30,8 +27,6 @@ const fetchRecipes = async () => {
   }
 
 };
-
-watch(() => props.searchTerm, fetchRecipes);
 
 onMounted(fetchRecipes);
 

@@ -9,7 +9,7 @@ const recipeName = ref('//Name//');
 const recipe = ref('# Please Write in md: [Guid](https://www.markdownguide.org/basic-syntax/)');
 
 const getRecipe = async () => {
-  if (!recipeId.value) return; 
+  if (!recipeId.value) return;
 
   try {
     const response = await fetch('/api/data/recipe/name/' + recipeId.value, {
@@ -47,8 +47,8 @@ const submitForm = async () => {
   const response = await fetch('/api/recipe/' + recipeId.value, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name: recipeName.value, content: recipe.value}),
-  });   
+    body: JSON.stringify({ name: recipeName.value, content: recipe.value }),
+  });
 
   console.log(recipeId.value)
 
@@ -61,7 +61,7 @@ const submitForm = async () => {
   } else {
     alert('Unexpected Error: Can\'t Upload Recipe');
   }
-};  
+};
 
 // Fetch when component is mounted
 onMounted(getRecipe);
@@ -83,7 +83,7 @@ const output = computed(() => marked(input.value))
 
   <div class="flex flex-row items-start justify-center px-30 h-screen">
 
-    <div class="card-container text-center w-dvh" >
+    <div class="card-container text-center w-dvh">
 
       <div class="card-content">
 
@@ -97,7 +97,9 @@ const output = computed(() => marked(input.value))
           <p class="flex flex-col">
             <label for="content" class="f-label">Write here</label>
             <br>
-            <textarea v-model="recipe" name="content" rows="10" class="border-2 border-dashed border-amber-700 bg-white p-5 text-black font-roboto-mono" required></textarea>
+            <textarea v-model="recipe" name="content" rows="10"
+              class="border-2 border-dashed border-amber-700 bg-white p-5 text-black font-roboto-mono"
+              required></textarea>
           </p>
 
           <div class="relative inline-block mt-10">
@@ -111,19 +113,17 @@ const output = computed(() => marked(input.value))
       </div>
 
     </div>
-    
+
     <!-- <div class="bg-amber-100 text-amber-900 text-left ml-14 px-5 py-3 w-dvh h-6/7 overflow-auto overflow-x-auto border border-gray-500"> -->
     <!--   <div class="output prose lg:prose-xl" v-html="output"></div> -->
     <!-- </div> -->
 
-   <div class="card-container mx-5">
+    <div class="card-container mx-5">
       <div class="card-content">
 
-        <div 
-          class="output prose min-h-100 max-h-150 min-w-100 overflow-auto w-dvh 
+        <div class="output prose min-h-100 max-h-150 min-w-100 overflow-auto w-dvh 
                  lg:prose-li:marker:text-amber-900 lg:prose-headings:text-amber-900 
-                 lg:prose-headings:font-[Monomakh] lg:text-amber-900" 
-          v-html="output">
+                 lg:prose-headings:font-[Monomakh] lg:text-amber-900" v-html="output">
         </div>
 
       </div>

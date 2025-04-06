@@ -1,6 +1,6 @@
 <script setup>
 
-import {ref, onMounted, defineProps, watch} from 'vue';
+import { ref, onMounted, defineProps, watch } from 'vue';
 import Card from '@/components/UserRecipeCard.vue';
 
 const recipes = ref([]);
@@ -19,20 +19,16 @@ const fetchRecipes = async () => {
     const data = await response.json();
     recipes.value = data;
     console.log(recipes)
-    
+
   } catch (error) {
 
-    alert('Failed to fetch recipes casue, ' + error); 
-    
+    alert('Failed to fetch recipes casue, ' + error);
+
   }
 
-}; 
+};
 
-watch( () => recipes.value, (newValue, oldValue) => {
-  console.log(`Views changed from ${oldValue} to ${newValue}`);
-});
 onMounted(fetchRecipes);
-
 </script>
 
 <template>
@@ -41,6 +37,6 @@ onMounted(fetchRecipes);
     <div v-for="recipe in recipes">
       <Card :name="recipe.name" :views="recipe.views" :uuid="recipe.uuid" />
     </div>
-  </div>  
+  </div>
 
 </template>

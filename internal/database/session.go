@@ -29,6 +29,18 @@ func (s *service)DeleteSession(sessionId string) (error) {
   return nil
 }
 
+func (s *service) DeleteSessionByUser(ownerId string) (error) {
+	query := `DELETE FROM sessions WHERE ownerid = $1`
+
+  _, err := s.db.Exec(query, ownerId)
+
+  if err != nil {
+    return err
+  }
+
+  return nil
+}   
+
 func (s *service)GetSession(sessionId string) (*modals.Session, error) {
   var session modals.Session
   query := "SELECT * FROM sessions WHERE sessionid = $1;"

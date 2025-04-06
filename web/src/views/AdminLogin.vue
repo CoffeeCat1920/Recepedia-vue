@@ -1,14 +1,13 @@
 <script>
-  import { defineComponent, ref, onMounted } from 'vue';
-  import { useAuthStore } from '@/stores/authStore.ts';
-  import { useRouter } from 'vue-router';
+import { defineComponent, ref, onMounted } from 'vue';
+import { useAuthStore } from '@/stores/authStore.ts';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   setup() {
     const router = useRouter();
     
     // Declare refs for name and password
-    const name = ref('');
     const password = ref('');
     
     // Access the auth store
@@ -16,7 +15,7 @@ export default defineComponent({
 
     // Login function
     const login = async () => {
-      await auth.login(name.value, password.value, router);
+      await auth.adminLogin(password.value, router);
     };
 
     // Optional: Check login status when the component is mounted
@@ -26,7 +25,6 @@ export default defineComponent({
     });
 
     return {
-      name,
       password,
       login,
     };
@@ -42,19 +40,12 @@ export default defineComponent({
 
       <div class="card-content">
 
-        <h1 class="title">Log In</h1>
-        <h2 class="title-secondary">Welcome Back</h2>
+        <h1 class="title">Admin Log In</h1>
 
         <form @submit.prevent="login" class="flex flex-col gap-4">
 
           <p class="flex flex-col">
-            <label for="name" class="f-label">Name</label>
-            <br>
-            <input id="name" v-model="name" type="text" class="f-input" required /> 
-          </p>
-
-          <p class="flex flex-col">
-            <label for="password" class="f-label">Password</label>
+            <label for="password" class="f-label">Admin Password</label>
             <br>
             <input id="password" v-model="password" type="password" class="f-input" /> 
           </p>

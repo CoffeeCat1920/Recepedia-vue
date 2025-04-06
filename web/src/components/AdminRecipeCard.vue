@@ -12,7 +12,7 @@ const router = useRouter();
 
 const deleteRecipes = async (id) => {
   try {
-    const response = await fetch(`/api/recipe/delete/${id} `, {
+    const response = await fetch(`/api/admin/recipe/delete/${id} `, {
       method: 'PATCH',
       credentials: "include",
     });
@@ -28,10 +28,6 @@ const deleteRecipes = async (id) => {
     console.error('Error:', error);
   }
 };
-
-const editRecipe = async (id) => {
-  router.push(`/editrecipe/${id}`);
-}
 
 </script>
 
@@ -49,13 +45,6 @@ const editRecipe = async (id) => {
         </div>
 
         <div class="absolute bottom-2 right-2 flex flex-col space-y-1">
-          <button
-            class="text-sm bg-blue-400 shadow-md shadow-amber-900 hover:scale-120 rotate-3 hover:rotate-10 transition-transform"
-            @click="editRecipe(uuid)">
-            Edit
-          </button>
-          <br>
-          <!-- Fixed: Removed {{ }} inside @click handler -->
           <button
             class="text-sm bg-red-400 shadow-md shadow-amber-900 px-2 hover:scale-110 hover:rotate-3 transition-transform"
             @click="deleteRecipes(uuid)">
