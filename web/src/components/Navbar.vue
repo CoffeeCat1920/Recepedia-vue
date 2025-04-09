@@ -12,6 +12,7 @@ const logout = async () => {
 
 onMounted(async () => {
   await auth.checkLogin();
+  await auth.checkAdminLogin();
 });
 </script>
 
@@ -37,8 +38,15 @@ onMounted(async () => {
         <router-link to="/signup" class="text-blue-600 hover:text-blue-800 font-medium">Sign Up</router-link>
         <router-link to="/login" class="text-blue-600 hover:text-blue-800 font-medium">Log In</router-link>
       </template>
+
+      <template v-if="auth.adminLoggedIn">
+        <p class="text-gray-700">|</p>
+
+        <router-link to="/admindashboard" class="text-blue-600 hover:text-blue-800 font-medium">Admin Menu</router-link>
+      </template>
+
     </div>
 
-
   </nav>
+
 </template>

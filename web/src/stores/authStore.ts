@@ -18,8 +18,8 @@ export const useAuthStore = defineStore("auth", {
           this.user = "";
           this.loggedIn = false;
           return
-        } 
-        
+        }
+
         const data = await response.json();
         this.user = data.User;
         this.loggedIn = true;
@@ -35,8 +35,8 @@ export const useAuthStore = defineStore("auth", {
           this.user = "";
           this.loggedIn = false;
           return
-        } 
-        
+        }
+
         const data = await response.json();
         this.adminLoggedIn = true;
       } catch (error) {
@@ -44,7 +44,7 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    async login(name : string, password : string, router : Router) {
+    async login(name: string, password: string, router: Router) {
       try {
 
         const response = await fetch("/api/login", {
@@ -57,7 +57,7 @@ export const useAuthStore = defineStore("auth", {
         if (!response.ok) {
           router.push('/login');
           return;
-        } 
+        }
 
         this.user = name;
         this.loggedIn = true;
@@ -69,7 +69,7 @@ export const useAuthStore = defineStore("auth", {
 
     },
 
-    async adminLogin(password : string, router : Router) {
+    async adminLogin(password: string, router: Router) {
       try {
         const response = await fetch("/api/admin/login", {
           method: "POST",
@@ -81,7 +81,7 @@ export const useAuthStore = defineStore("auth", {
         if (!response.ok) {
           router.push('/adminlogin');
           return;
-        } 
+        }
 
         this.adminLoggedIn = true;
         router.push('/admindashboard');
@@ -90,13 +90,13 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    async logout(router : Router) {
+    async logout(router: Router) {
       try {
         const response = await fetch("/api/logout", { method: "POST", credentials: "include" });
         if (!response.ok) {
           throw new Error("Logout failed");
-        } 
-        this.user = ""; 
+        }
+        this.user = "";
         this.loggedIn = false;
         router.push('/login')
       } catch (error) {
