@@ -148,7 +148,6 @@ func (s *service) doesExists(value, attribute, table string) bool {
 	err := s.db.QueryRow(q, value).Scan(&exists)
 
 	if err != nil {
-		fmt.Println("Error checking existence:", err)
 		return false
 	}
 

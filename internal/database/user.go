@@ -21,24 +21,6 @@ func (s *service) AddUser(user *modals.User) error {
 	return nil
 }
 
-func (s *service) GetUser(UUID string) (*modals.User, error) {
-	var user *modals.User
-
-	q := `
-  SELECT * FROM users 
-  WHERE uuid = $1
-  `
-
-	row := s.db.QueryRow(q, UUID)
-	err := row.Scan(&user.UUID, &user.Name, &user.Password)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return user, nil
-}
-
 func (s *service) GetUserByName(name string) (*modals.User, error) {
 	var user modals.User
 
