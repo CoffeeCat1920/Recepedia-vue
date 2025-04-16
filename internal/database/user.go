@@ -6,7 +6,7 @@ import (
 
 func (s *service) AddUser(user *modals.User) error {
 	if s.doesExists(user.Name, "name", "users") {
-		return ErrUserAlreadyExists
+		return ErrItemAlreadyExists
 	}
 
 	q := `
@@ -22,6 +22,10 @@ func (s *service) AddUser(user *modals.User) error {
 }
 
 func (s *service) GetUserByName(name string) (*modals.User, error) {
+	if !s.doesExists(name, "name", "users") {
+		return nil, ErrItemNotFound
+	}
+
 	var user modals.User
 
 	query := "SELECT * FROM users WHERE name = $1;"
@@ -36,6 +40,10 @@ func (s *service) GetUserByName(name string) (*modals.User, error) {
 }
 
 func (s *service) GetUserByUUid(uuid string) (*modals.User, error) {
+	if !s.doesExists(uuid, "uuid", "users") {
+		return nil, ErrItemNotFound
+	}
+
 	var user modals.User
 
 	query := "SELECT * FROM users WHERE uuid = $1;"
@@ -50,6 +58,9 @@ func (s *service) GetUserByUUid(uuid string) (*modals.User, error) {
 }
 
 func (s *service) DeleteUserByUUid(uuid string) error {
+	if !s.doesExists(uuid, "uuid", "users") {
+		return ErrItemNotFound
+	}
 	q := `
 		DELETE FROM users 
 		WHERE uuid = $1;
@@ -63,6 +74,9 @@ func (s *service) DeleteUserByUUid(uuid string) error {
 }
 
 func (s *service) GetUserUUid(name string) (string, error) {
+	if !s.doesExists(name, "name", "users") {
+		return "", ErrItemNotFound
+	}
 	var user modals.User
 
 	query := "SELECT * FROM users WHERE name = $1"
@@ -86,6 +100,7 @@ func (s *service) NumberOfUsers() int {
 }
 
 func (s *service) GetAllUsers() ([]modals.User, error) {
+
 	var users []modals.User
 
 	q := `SELECT * FROM users;`
@@ -98,7 +113,7 @@ func (s *service) GetAllUsers() ([]modals.User, error) {
 
 	for rows.Next() {
 		var user modals.User
-		err := rows.Scan(&user.UUID, &user.Name, &user.Password) // Adjust fields as per your Recipe struct
+		err := rows.Scan(&user.UUID, &user.Name, &user.Password)
 		if err != nil {
 			return nil, err
 		}
@@ -109,7 +124,5 @@ func (s *service) GetAllUsers() ([]modals.User, error) {
 		return nil, err
 	}
 
-	// Return the slice of recipes
 	return users, nil
-
 }

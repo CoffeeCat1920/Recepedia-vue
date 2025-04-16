@@ -37,7 +37,6 @@ type Service interface {
 	// Recipe
 	AddRecipe(recipe *modals.Recipe) error
 	GetRecipe(UUID string) (*modals.Recipe, error)
-	GetRecipeByName(UUID string) (*modals.Recipe, error)
 	MostViewedRecipes() ([]modals.Recipe, error)
 	IncreaseRecipeViews(recipe *modals.Recipe) error
 	SearchRecipe(name string) ([]modals.Recipe, error)

@@ -1,6 +1,8 @@
 package database
 
-import "big/internal/modals"
+import (
+	"big/internal/modals"
+)
 
 func (s *service) AddRecipe(recipe *modals.Recipe) error {
 	q := `
@@ -24,6 +26,7 @@ func (s *service) GetRecipe(UUID string) (*modals.Recipe, error) {
   `
 
 	row := s.db.QueryRow(q, UUID)
+
 	err := row.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
 
 	if err != nil {
@@ -36,19 +39,27 @@ func (s *service) GetRecipe(UUID string) (*modals.Recipe, error) {
 func (s *service) DeleteRecipe(uuid string) error {
 	q := "DELETE FROM recipes WHERE uuid = $1"
 
-	_, err := s.db.Query(q, uuid)
-
+	res, err := s.db.Exec(q, uuid)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrItemNotFound
 	}
 
 	return nil
 }
 
 func (s *service) DeleteRecipeByUser(userUUid string) error {
-	q := "DELETE FROM recipes WHERE ownerid= $1"
+	q := "DELETE FROM recipes WHERE ownerid = $1"
 
-	_, err := s.db.Query(q, userUUid)
+	_, err := s.db.Exec(q, userUUid)
 
 	if err != nil {
 		return err
@@ -76,23 +87,6 @@ func (s *service) MostViewedRecipes() ([]modals.Recipe, error) {
 	}
 
 	return recipes, nil
-}
-
-func (s *service) GetRecipeByName(name string) (*modals.Recipe, error) {
-	var recipe *modals.Recipe
-
-	q := `
-  SELECT * FROM recipes
-  WHERE name = $1;
-  `
-	row := s.db.QueryRow(q, name)
-	err := row.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return recipe, nil
 }
 
 func (s *service) SearchRecipe(name string) ([]modals.Recipe, error) {
