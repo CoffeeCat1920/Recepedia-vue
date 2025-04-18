@@ -1,7 +1,9 @@
 package api
 
 import (
+	"big/internal/database"
 	"big/internal/modals"
+	"database/sql"
 	"fmt"
 	"net/http"
 )
@@ -31,7 +33,47 @@ type RecipeInfo struct {
 	Content string `json:"content"`
 }
 
-func createCookie(w http.ResponseWriter, ownerId string) *modals.Session {
+type Api interface {
+	Auth(next http.HandlerFunc) http.HandlerFunc
+
+	SignUpHandler(w http.ResponseWriter, r *http.Request)
+	LoginHandler(w http.ResponseWriter, r *http.Request)
+	LogoutHandler(w http.ResponseWriter, r *http.Request)
+
+	VerifyAdmin(w http.ResponseWriter, r *http.Request)
+	GetAllRecipesHandler(w http.ResponseWriter, r *http.Request)
+	GetAllUsersHandler(w http.ResponseWriter, r *http.Request)
+
+	UploadRecipe(w http.ResponseWriter, r *http.Request)
+	ServeRecipe(w http.ResponseWriter, r *http.Request)
+	EditRecipeHandler(w http.ResponseWriter, r *http.Request)
+	DeleteRecipeHandler(w http.ResponseWriter, r *http.Request)
+	MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request)
+	SearchRecipeHandler(w http.ResponseWriter, r *http.Request)
+	RecipeInfoHandler(w http.ResponseWriter, r *http.Request)
+	RecipeMdContent(w http.ResponseWriter, r *http.Request)
+
+	DeleteUserHandler(w http.ResponseWriter, r *http.Request)
+
+	LoginInfoHandler(w http.ResponseWriter, r *http.Request)
+	LoginRecipeInfoHandler(w http.ResponseWriter, r *http.Request)
+	AdminLoginInfoHandler(w http.ResponseWriter, r *http.Request)
+	AdminDashboardDataHandler(w http.ResponseWriter, r *http.Request)
+}
+
+type api struct {
+	db database.Service
+}
+
+func NewApi() Api {
+	return &api{db: database.New()}
+}
+
+func NewTest(db *sql.DB) Api {
+	return &api{db: database.NewTest(db)}
+}
+
+func (api *api) createCookie(w http.ResponseWriter, ownerId string) *modals.Session {
 	session := modals.NewSession(ownerId)
 	exp, err := session.GetExpTime()
 

@@ -82,6 +82,10 @@ func New() Service {
 	return dbInstance
 }
 
+func NewTest(db *sql.DB) Service {
+	return &service{db: db}
+}
+
 func (s *service) Health() map[string]string {
 	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Second)
 	defer cancel()

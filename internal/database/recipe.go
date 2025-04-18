@@ -2,6 +2,7 @@ package database
 
 import (
 	"big/internal/modals"
+	"database/sql"
 )
 
 func (s *service) AddRecipe(recipe *modals.Recipe) error {
@@ -30,7 +31,11 @@ func (s *service) GetRecipe(UUID string) (*modals.Recipe, error) {
 	err := row.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
 
 	if err != nil {
-		return nil, err
+		if err == sql.ErrNoRows {
+			return nil, ErrItemNotFound
+		} else {
+			return nil, err
+		}
 	}
 
 	return &recipe, nil
@@ -72,6 +77,7 @@ func (s *service) MostViewedRecipes() ([]modals.Recipe, error) {
 	var recipes []modals.Recipe
 
 	rows, err := s.db.Query("SELECT * FROM recipes ORDER BY views LIMIT 10;")
+
 	if err != nil {
 		return nil, err
 	}
@@ -101,10 +107,6 @@ func (s *service) SearchRecipe(name string) ([]modals.Recipe, error) {
 	}
 	defer rows.Close()
 
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
 	for rows.Next() {
 		var recipe modals.Recipe
 		err := rows.Scan(&recipe.UUID, &recipe.Name, &recipe.OwnerId, &recipe.Views)
@@ -124,10 +126,18 @@ func (s *service) IncreaseRecipeViews(recipe *modals.Recipe) error {
     WHERE uuid = $1
   `
 
-	_, err := s.db.Query(q, recipe.UUID)
-
+	res, err := s.db.Exec(q, recipe.UUID)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrItemNotFound
 	}
 
 	return nil
@@ -140,10 +150,18 @@ func (s *service) EditRecipeName(uuid string, name string) error {
 		WHERE uuid = $2
 	`
 
-	_, err := s.db.Exec(q, name, uuid)
-
+	res, err := s.db.Exec(q, name, uuid)
 	if err != nil {
 		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected <= 0 {
+		return ErrItemNotFound
 	}
 
 	return nil
@@ -213,6 +231,5 @@ func (s *service) GetAllRecipes() ([]modals.Recipe, error) {
 		return nil, err
 	}
 
-	// Return the slice of recipes
 	return recipes, nil
 }

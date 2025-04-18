@@ -1,14 +1,14 @@
 package api
 
 import (
-	"big/internal/database"
 	"encoding/json"
 	"net/http"
 )
 
-func AdminDashboardDataHandler(w http.ResponseWriter, r *http.Request) {
-	numberOfRecipes := database.New().NumberOfRecipes()
-	numberOfUsers := database.New().NumberOfUsers()
+func (api *api) AdminDashboardDataHandler(w http.ResponseWriter, r *http.Request) {
+	db := api.db
+	numberOfRecipes := db.NumberOfRecipes()
+	numberOfUsers := db.NumberOfUsers()
 
 	data := struct {
 		NumberOfRecipes int `json:"numberOfRecipes"`

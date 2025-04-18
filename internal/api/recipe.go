@@ -1,7 +1,6 @@
 package api
 
 import (
-	"big/internal/database"
 	"big/internal/modals"
 	"encoding/json"
 	"fmt"
@@ -99,7 +98,7 @@ func deleteRecipeFiles(uuid string) error {
 	return nil
 }
 
-func UploadRecipe(w http.ResponseWriter, r *http.Request) {
+func (api *api) UploadRecipe(w http.ResponseWriter, r *http.Request) {
 
 	var recipeInfo RecipeInfo
 	err := json.NewDecoder(r.Body).Decode(&recipeInfo)
@@ -118,7 +117,9 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get user session
-	session, err := database.New().GetSession(c.Value)
+	db := api.db
+
+	session, err := db.GetSession(c.Value)
 	if err != nil {
 		fmt.Printf("Can't find Session %s, cause %s\n", c.Value, err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -126,7 +127,7 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	recipe := modals.NewRecipe(recipeInfo.Name, session.OwnerId)
-	err = database.New().AddRecipe(recipe)
+	err = db.AddRecipe(recipe)
 	if err != nil {
 		fmt.Printf("Can't Add the recipes cause, %s\n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -165,7 +166,7 @@ func UploadRecipe(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
+func (api *api) EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	recipeUUID := vars["id"]
 
@@ -200,7 +201,9 @@ func EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.New().EditRecipeName(recipeUUID, recipeInfo.Name)
+	db := api.db
+
+	err = db.EditRecipeName(recipeUUID, recipeInfo.Name)
 	fmt.Printf("Provided recipe name, %s", recipeInfo.Name)
 	if err != nil {
 		fmt.Printf("Can't change recipe name cause, %s \n", err)
@@ -211,19 +214,21 @@ func EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
+func (api *api) DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	recipeUUID := vars["id"]
 
 	directoryPath := "upload/recipes/" + recipeUUID
 
-	if !(authSameUser(r)) {
+	if !(api.authSameUser(r)) {
 		fmt.Println("Doesn't have the permission to edit recipe")
 		http.Error(w, "Doesn't have the permission to edit recipe", http.StatusInternalServerError)
 		return
 	}
 
-	err := database.New().DeleteRecipe(recipeUUID)
+	db := api.db
+
+	err := db.DeleteRecipe(recipeUUID)
 	if err != nil {
 		fmt.Printf("Can't find Recipe To Delete cause, %s\n", err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -246,13 +251,15 @@ func DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func SearchRecipeHandler(w http.ResponseWriter, r *http.Request) {
+func (api *api) SearchRecipeHandler(w http.ResponseWriter, r *http.Request) {
 
 	searchterm := r.URL.Query().Get("searchTerm")
 
 	fmt.Printf("\n%s\n", searchterm)
 
-	recipes, err := database.New().SearchRecipe(searchterm)
+	db := api.db
+
+	recipes, err := db.SearchRecipe(searchterm)
 	if err != nil {
 		http.Error(w, "No recipes found", http.StatusInternalServerError)
 		fmt.Printf("Can't get the searched recipes, %s", err.Error())
@@ -269,11 +276,11 @@ func SearchRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func ServeRecipe(w http.ResponseWriter, r *http.Request) {
+func (api *api) ServeRecipe(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	db := database.New()
+	db := api.db
 
 	recipe, err := db.GetRecipe(vars["id"])
 
@@ -311,10 +318,10 @@ func ServeRecipe(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func RecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
+func (api *api) RecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 
-	db := database.New()
+	db := api.db
 
 	recipe, err := db.GetRecipe(vars["id"])
 
@@ -345,11 +352,11 @@ func RecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func RecipeMdContent(w http.ResponseWriter, r *http.Request) {
+func (api *api) RecipeMdContent(w http.ResponseWriter, r *http.Request) {
 
 	vars := mux.Vars(r)
 
-	db := database.New()
+	db := api.db
 
 	recipe, err := db.GetRecipe(vars["id"])
 
@@ -377,12 +384,12 @@ func RecipeMdContent(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(mdContent))
 }
 
-func GetRecipeByUser(w http.ResponseWriter, r *http.Request) {
+func (api *api) GetRecipeByUser(w http.ResponseWriter, r *http.Request) {
 	name := r.URL.Query().Get("name")
 
 	var recipes []modals.Recipe
 
-	db := database.New()
+	db := api.db
 
 	recipes, err := db.GetRecipesByUser(name)
 	if err != nil {
@@ -402,8 +409,8 @@ func GetRecipeByUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request) {
-	recipes, err := database.New().MostViewedRecipes()
+func (api *api) MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request) {
+	recipes, err := api.db.MostViewedRecipes()
 	if err != nil {
 		http.Error(w, "Can't get any recipes", http.StatusNotFound)
 	}
@@ -418,8 +425,8 @@ func MostViewedRecipesHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(jsonData)
 }
 
-func GetAllRecipesHandler(w http.ResponseWriter, r *http.Request) {
-	recipes, err := database.New().GetAllRecipes()
+func (api *api) GetAllRecipesHandler(w http.ResponseWriter, r *http.Request) {
+	recipes, err := api.db.GetAllRecipes()
 	if err != nil {
 		http.Error(w, "Can't get any recipes", http.StatusNotFound)
 		fmt.Printf("Can't get all the recipes cause, %s", err.Error())

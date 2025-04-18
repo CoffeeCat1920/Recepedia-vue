@@ -15,6 +15,8 @@ func (s *Server) RegisterRoutes() http.Handler {
 	// Apply CORS middleware
 	r.Use(s.corsMiddleware)
 
+	api := api.NewApi()
+
 	// Session/Authentication
 	r.HandleFunc("/signup", api.SignUpHandler).Methods("POST")
 	r.HandleFunc("/login", api.LoginHandler).Methods("POST")

@@ -1,0 +1,409 @@
+
+package database
+
+import (
+	"big/internal/modals"
+	"errors"
+	"fmt"
+	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
+)
+
+func TestAddUser(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock DB: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	testCases := []struct {
+		name        string
+		user        *modals.User
+		setupMock   func()
+		expectedErr error
+	}{
+		{
+			name: "Success - New user inserted",
+			user: &modals.User{
+				UUID:     "test-uuid",
+				Name:     "testuser",
+				Password: "password123",
+			},
+			setupMock: func() {
+				mock.ExpectQuery("SELECT EXISTS\\(SELECT 1 FROM users WHERE name = \\$1\\)").
+					WithArgs("testuser").
+					WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+
+				mock.ExpectExec("INSERT INTO users\\(uuid, name, password\\)").
+					WithArgs("test-uuid", "testuser", "password123").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Failure - User already exists",
+			user: &modals.User{
+				UUID:     "test-uuid",
+				Name:     "existinguser",
+				Password: "password123",
+			},
+			setupMock: func() {
+				mock.ExpectQuery("SELECT EXISTS\\(SELECT 1 FROM users WHERE name = \\$1\\)").
+					WithArgs("existinguser").
+					WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(true))
+			},
+			expectedErr: ErrUserAlreadyExists,
+		},
+		{
+			name: "Failure - Existence check DB error",
+			user: &modals.User{
+				UUID:     "test-uuid",
+				Name:     "testuser",
+				Password: "password123",
+			},
+			setupMock: func() {
+				mock.ExpectQuery("SELECT EXISTS\\(SELECT 1 FROM users WHERE name = \\$1\\)").
+					WithArgs("testuser").
+					WillReturnError(fmt.Errorf("connection refused"))
+
+				mock.ExpectExec("INSERT INTO users\\(uuid, name, password\\)").
+					WithArgs("test-uuid", "testuser", "password123").
+					WillReturnResult(sqlmock.NewResult(1, 1))
+			},
+			expectedErr: nil,
+		},
+		{
+			name: "Failure - Insert constraint violation",
+			user: &modals.User{
+				UUID:     "test-uuid",
+				Name:     "testuser",
+				Password: "password123",
+			},
+			setupMock: func() {
+				mock.ExpectQuery("SELECT EXISTS\\(SELECT 1 FROM users WHERE name = \\$1\\)").
+					WithArgs("testuser").
+					WillReturnRows(sqlmock.NewRows([]string{"exists"}).AddRow(false))
+
+				mock.ExpectExec("INSERT INTO users\\(uuid, name, password\\)").
+					WithArgs("test-uuid", "testuser", "password123").
+					WillReturnError(fmt.Errorf("unique constraint violation"))
+			},
+			expectedErr: fmt.Errorf("unique constraint violation"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+			err := s.AddUser(tc.user)
+
+			if tc.expectedErr == nil && err != nil {
+				t.Errorf("Expected no error, got %v", err)
+			} else if tc.expectedErr != nil && err == nil {
+				t.Errorf("Expected error %v, got none", tc.expectedErr)
+			} else if tc.expectedErr != nil && err != nil && tc.expectedErr.Error() != err.Error() {
+				t.Errorf("Expected error %v, got %v", tc.expectedErr, err)
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestGetUserByName(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock DB: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	testCases := []struct {
+		name        string
+		userName    string
+		setupMock   func()
+		expectedErr bool
+	}{
+		{
+			name:     "Success - User found",
+			userName: "test",
+			setupMock: func() {
+				rows := sqlmock.NewRows([]string{"uuid", "name", "password"}).
+					AddRow("test-uuid-123", "test", "hashed_password_here")
+
+				mock.ExpectQuery("SELECT \\* FROM users WHERE name = \\$1").
+					WithArgs("test").
+					WillReturnRows(rows)
+			},
+			expectedErr: false,
+		},
+		{
+			name:     "Failure - No user found",
+			userName: "test",
+			setupMock: func() {
+				mock.ExpectQuery("SELECT \\* FROM users WHERE name = \\$1").
+					WithArgs("test").
+					WillReturnRows(sqlmock.NewRows([]string{"uuid", "name", "password"}))
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+			user, err := s.GetUserByName(tc.userName)
+
+			if (err != nil) != tc.expectedErr {
+				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
+			}
+			if !tc.expectedErr && user.Name != tc.userName {
+				t.Errorf("Expected user name %s, got %s", tc.userName, user.Name)
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestGetUserByUUid(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock DB: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	testCases := []struct {
+		name        string
+		userUUid    string
+		setupMock   func()
+		expectedErr bool
+	}{
+		{
+			name:     "Success - User found by UUID",
+			userUUid: "test-uuid-123",
+			setupMock: func() {
+				rows := sqlmock.NewRows([]string{"uuid", "name", "password"}).
+					AddRow("test-uuid-123", "test", "hashed_password_here")
+
+				mock.ExpectQuery("SELECT \\* FROM users WHERE uuid = \\$1").
+					WithArgs("test-uuid-123").
+					WillReturnRows(rows)
+			},
+			expectedErr: false,
+		},
+		{
+			name:     "Failure - No user found",
+			userUUid: "test-uuid-123",
+			setupMock: func() {
+				mock.ExpectQuery("SELECT \\* FROM users WHERE uuid = \\$1").
+					WithArgs("test-uuid-123").
+					WillReturnRows(sqlmock.NewRows([]string{"uuid", "name", "password"}))
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+			user, err := s.GetUserByUUid(tc.userUUid)
+
+			if (err != nil) != tc.expectedErr {
+				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
+			}
+			if !tc.expectedErr && user.UUID != tc.userUUid {
+				t.Errorf("Expected UUID %s, got %s", tc.userUUid, user.UUID)
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestDeleteUserByUUid(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock DB: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	testCases := []struct {
+		name        string
+		userUUid    string
+		setupMock   func()
+		expectedErr bool
+	}{
+		{
+			name:     "Success - User deleted",
+			userUUid: "test-uuid-123",
+			setupMock: func() {
+				mock.ExpectExec("DELETE FROM users WHERE uuid = \\$1").
+					WithArgs("test-uuid-123").
+					WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			expectedErr: false,
+		},
+		{
+			name:     "Failure - Delete error",
+			userUUid: "test-uuid-123",
+			setupMock: func() {
+				mock.ExpectExec("DELETE FROM users WHERE uuid = \\$1").
+					WithArgs("test-uuid-123").
+					WillReturnError(errors.New("db Error"))
+			},
+			expectedErr: true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+			err := s.DeleteUserByUUid(tc.userUUid)
+
+			if (err != nil) != tc.expectedErr {
+				t.Errorf("Expected error: %v, got: %v", tc.expectedErr, err)
+			}
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+func TestNumberOfUsers(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock DB: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(5)
+
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users;").
+		WillReturnRows(rows)
+
+	count := s.NumberOfUsers()
+
+	if count != 5 {
+		t.Errorf("Expected count 5, got %d", count)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Unfulfilled expectations: %s", err)
+	}
+}
+
+func TestGetAllUsers(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock database: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	testCases := []struct {
+		name        string
+		setupMock   func()
+		expectedLen int
+		expectErr   bool
+	}{
+		{
+			name: "Success - Multiple Users",
+			setupMock: func() {
+				rows := sqlmock.NewRows([]string{"uuid", "name", "password"}).
+					AddRow("uuid-1", "Alice", "hashed_123").
+					AddRow("uuid-2", "Bob", "hashed_456")
+
+				mock.ExpectQuery("SELECT \\* FROM users;").
+					WillReturnRows(rows)
+			},
+			expectedLen: 2,
+			expectErr:   false,
+		},
+		{
+			name: "Failure - Query error",
+			setupMock: func() {
+				mock.ExpectQuery("SELECT \\* FROM users;").
+					WillReturnError(errors.New("query failed"))
+			},
+			expectedLen: 0,
+			expectErr:   true,
+		},
+		{
+			name: "Failure - Scan error",
+			setupMock: func() {
+				// Simulate wrong number/type of columns to force a scan error
+				rows := sqlmock.NewRows([]string{"uuid", "name"}). // missing password
+											AddRow("uuid-3", "Charlie")
+
+				mock.ExpectQuery("SELECT \\* FROM users;").
+					WillReturnRows(rows)
+			},
+			expectedLen: 0,
+			expectErr:   true,
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			tc.setupMock()
+
+			users, err := s.GetAllUsers()
+
+			if (err != nil) != tc.expectErr {
+				t.Errorf("Expected error: %v, got: %v", tc.expectErr, err)
+			}
+
+			if len(users) != tc.expectedLen {
+				t.Errorf("Expected %d users, got %d", tc.expectedLen, len(users))
+			}
+
+			if err := mock.ExpectationsWereMet(); err != nil {
+				t.Errorf("Unfulfilled expectations: %s", err)
+			}
+		})
+	}
+}
+
+
+func TestNumberOfUsers(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("Failed to create mock database: %v", err)
+	}
+	defer db.Close()
+
+	s := &service{db: db}
+
+	// Mock the row result
+	rows := sqlmock.NewRows([]string{"count"}).AddRow(5)
+
+	mock.ExpectQuery("SELECT COUNT\\(\\*\\) FROM users;").
+		WillReturnRows(rows)
+
+	count := s.NumberOfUsers()
+
+	if count != 5 {
+		t.Errorf("Expected user count 5, got %d", count)
+	}
+
+	if err := mock.ExpectationsWereMet(); err != nil {
+		t.Errorf("Unfulfilled expectations: %s", err)
+	}
+}

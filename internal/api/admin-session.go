@@ -9,7 +9,7 @@ import (
 )
 
 // Helper function to get the admin session from the request
-func authAdmin(r *http.Request) (*modals.AdminSession, error) {
+func (api *api) authAdmin(r *http.Request) (*modals.AdminSession, error) {
 	cookie, err := r.Cookie("admin-session-token")
 	if err != nil {
 		fmt.Printf("\nCan't find cookie\n")
@@ -29,9 +29,9 @@ func authAdmin(r *http.Request) (*modals.AdminSession, error) {
 }
 
 // Function to create middleware for admin authentication
-func AdminAuth(next http.HandlerFunc) http.HandlerFunc {
+func (api *api) AdminAuth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		_, err := authAdmin(r)
+		_, err := api.authAdmin(r)
 		if err != nil {
 			http.Redirect(w, r, "/view/admin-login", 302)
 			fmt.Printf("Can't log the admin in cause, %s", err.Error())
@@ -43,7 +43,7 @@ func AdminAuth(next http.HandlerFunc) http.HandlerFunc {
 }
 
 // Function to verify admin credentials
-func VerifyAdmin(w http.ResponseWriter, r *http.Request) {
+func (api *api) VerifyAdmin(w http.ResponseWriter, r *http.Request) {
 	var adminReq AdminRequest
 	err := json.NewDecoder(r.Body).Decode(&adminReq)
 
@@ -53,9 +53,9 @@ func VerifyAdmin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db := database.New()
+	db := api.db
 
-	session := createAdminCookie(w)
+	session := api.createAdminCookie(w)
 	err = db.AddAdminSession(session)
 	if err != nil {
 		panic(err)
@@ -66,8 +66,8 @@ func VerifyAdmin(w http.ResponseWriter, r *http.Request) {
 }
 
 // Function to handle admin login info requests
-func AdminLoginInfoHandler(w http.ResponseWriter, r *http.Request) {
-	session, err := authAdmin(r)
+func (api *api) AdminLoginInfoHandler(w http.ResponseWriter, r *http.Request) {
+	session, err := api.authAdmin(r)
 
 	loginInfo := &AdminLoginInfo{
 		UUID:     "",

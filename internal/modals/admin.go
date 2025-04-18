@@ -8,19 +8,17 @@ type Admin struct {
 	Password string
 }
 
-
 var (
-  admin *Admin
-  admin_password = "123" 
-) 
+	admin          *Admin
+	admin_password = "123"
+)
 
-
-func NewAdmin() (*Admin) {
+func NewAdmin() *Admin {
 	if admin != nil {
 		return admin
 	}
 
-	hashedPassword,_ := hashPassword(admin_password) 
+	hashedPassword, _ := hashPassword(admin_password)
 
 	admin = &Admin{
 		Password: hashedPassword,
@@ -32,7 +30,7 @@ func NewAdmin() (*Admin) {
 func (admin *Admin) CheckPassword(password string) bool {
 	hashedPassword := []byte(admin.Password)
 	passwordBytes := []byte(password)
-	
+
 	err := bcrypt.CompareHashAndPassword(hashedPassword, passwordBytes)
 
 	return err == nil

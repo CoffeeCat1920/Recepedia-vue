@@ -1,7 +1,6 @@
 package api
 
 import (
-	"big/internal/database"
 	"big/internal/modals"
 	"encoding/json"
 	"fmt"
@@ -10,7 +9,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-func SignUpHandler(w http.ResponseWriter, r *http.Request) {
+func (api *api) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	var userReq UserRequest
 	err := json.NewDecoder(r.Body).Decode(&userReq)
@@ -23,7 +22,9 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 
 	user := modals.NewUser(userReq.Name, userReq.Password)
 
-	err = database.New().AddUser(user)
+	db := api.db
+
+	err = db.AddUser(user)
 	if err != nil {
 		http.Error(w, "Database Error", http.StatusInternalServerError)
 		fmt.Printf("Can't add user to the db case, %s \n", err.Error())
@@ -33,13 +34,13 @@ func SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("Called")
+func (api *api) DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	userId := vars["id"]
 
 	// deleting all the users
-	err := database.New().DeleteRecipeByUser(userId)
+	db := api.db
+	err := db.DeleteRecipeByUser(userId)
 	if err != nil {
 		fmt.Printf("Can't find user of id %s \n", userId)
 		http.Error(w, "User not found", http.StatusInternalServerError)
@@ -47,7 +48,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// delete sessions
-	err = database.New().DeleteSessionByUser(userId)
+	err = db.DeleteSessionByUser(userId)
 	if err != nil {
 		fmt.Printf("Can't delete session of  id %s \n", userId)
 		http.Error(w, "User not found", http.StatusInternalServerError)
@@ -55,7 +56,7 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// deleting the user
-	err = database.New().DeleteUserByUUid(userId)
+	err = db.DeleteUserByUUid(userId)
 	if err != nil {
 		fmt.Printf("Can't find user of id %s \n", userId)
 		http.Error(w, "User not found", http.StatusInternalServerError)
@@ -65,8 +66,11 @@ func DeleteUserHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-func GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
-	users, err := database.New().GetAllUsers()
+func (api *api) GetAllUsersHandler(w http.ResponseWriter, r *http.Request) {
+
+	db := api.db
+
+	users, err := db.GetAllUsers()
 
 	if err != nil {
 		http.Error(w, "Can't get any recipes", http.StatusNotFound)
