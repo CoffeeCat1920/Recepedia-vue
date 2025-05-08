@@ -1,7 +1,6 @@
 package api
 
 import (
-	"big/internal/database"
 	"big/internal/modals"
 	"encoding/json"
 	"fmt"
@@ -18,7 +17,8 @@ func (api *api) auth(r *http.Request) (*modals.Session, error) {
 	}
 
 	sessionId := cookie.Value
-	session, err := database.New().GetSession(sessionId)
+	session, err := api.db.GetSession(sessionId)
+
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +199,7 @@ func (api *api) authSameUser(r *http.Request) bool {
 	// Getting the recipe
 	vars := mux.Vars(r)
 	recipeUUID := vars["id"]
-	recipe, err := database.New().GetRecipe(recipeUUID)
+	recipe, err := api.db.GetRecipe(recipeUUID)
 	if err != nil {
 		fmt.Println("Can't find Recipe To Edit")
 		return false

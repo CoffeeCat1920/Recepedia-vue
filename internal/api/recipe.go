@@ -4,99 +4,13 @@ import (
 	"big/internal/modals"
 	"encoding/json"
 	"fmt"
-	"io/fs"
 	"net/http"
 	"os"
 	"text/template"
 
-	"github.com/gomarkdown/markdown"
 	"github.com/gorilla/mux"
+	"github.com/spf13/afero"
 )
-
-func fileExists(path string) bool {
-	_, err := os.Stat(path)
-	return !os.IsNotExist(err)
-}
-
-func mdFileGenreator(content string, uuid string) error {
-
-	directoryPath := "upload/recipes/" + uuid
-	if !fileExists(directoryPath) {
-		fmt.Printf("Recipe Directory Doesn't Exists, %s \n", directoryPath)
-		return fmt.Errorf("Recipe Directory Doesn't Exists, %s", directoryPath)
-	}
-
-	mdPath := directoryPath + "/recipe.md"
-	mdFile, err := os.Create(mdPath)
-	if err != nil {
-		fmt.Printf("Error creating markdown file: %s\n", err.Error())
-		return err
-	}
-	defer mdFile.Close()
-
-	_, err = mdFile.WriteString(content)
-	if err != nil {
-		fmt.Printf("Error writing to markdown file: %s\n", err.Error())
-		return err
-	}
-
-	return nil
-}
-
-func htmlFileGenerator(recipeName string, content string, uuid string) error {
-	directoryPath := "upload/recipes/" + uuid
-	if !fileExists(directoryPath) {
-		fmt.Printf("Recipe Directory Doesn't Exists, %s \n", directoryPath)
-		return fmt.Errorf("Recipe Directory Doesn't Exists, %s", directoryPath)
-	}
-
-	htmlFile := directoryPath + "/recipe.html"
-
-	htmlContent := markdown.ToHTML([]byte(content), nil, nil)
-
-	templateContent := fmt.Sprintf(
-		`<title> %s </title>
-  `+string(htmlContent), recipeName)
-
-	if !fileExists(htmlFile) {
-		err := os.WriteFile(htmlFile, []byte(templateContent), fs.ModePerm)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return nil
-}
-
-func deleteRecipeFiles(uuid string) error {
-	directoryPath := "upload/recipes/" + uuid
-	if !fileExists(directoryPath) {
-		fmt.Printf("Recipe Directory Doesn't Exists, %s \n", directoryPath)
-		return fmt.Errorf("Recipe Directory Doesn't Exists, %s", directoryPath)
-	}
-
-	mdPath := directoryPath + "/recipe.md"
-	if !fileExists(mdPath) {
-		fmt.Printf("Recipe mdFile Doesn't Exists, %s \n", directoryPath)
-		return fmt.Errorf("Recipe mdFile Doesn't Exists, %s", directoryPath)
-	}
-	err := os.Remove(mdPath)
-	if err != nil {
-		return err
-	}
-
-	htmlFile := directoryPath + "/recipe.html"
-	if !fileExists(htmlFile) {
-		fmt.Printf("Recipe mdFile Doesn't Exists, %s \n", directoryPath)
-		return fmt.Errorf("Recipe mdFile Doesn't Exists, %s", directoryPath)
-	}
-	err = os.Remove(htmlFile)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
 
 func (api *api) UploadRecipe(w http.ResponseWriter, r *http.Request) {
 
@@ -136,13 +50,13 @@ func (api *api) UploadRecipe(w http.ResponseWriter, r *http.Request) {
 
 	// Create directory for recipe
 	directoryPath := "upload/recipes/" + recipe.UUID
-	if fileExists(directoryPath) {
+	if api.fileExists(directoryPath) {
 		fmt.Println("Recipe Directory Already Exists")
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	err = os.Mkdir(directoryPath, 0755)
+	err = api.fs.Mkdir(directoryPath, 0755)
 	if err != nil {
 		fmt.Printf("Error creating directory: %s\n", err.Error())
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -150,14 +64,14 @@ func (api *api) UploadRecipe(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Creating an html file
-	err = mdFileGenreator(recipeInfo.Content, recipe.UUID)
+	err = api.mdFileGenreator(recipeInfo.Content, recipe.UUID)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
 	// Creating an html file
-	err = htmlFileGenerator(recipe.Name, recipeInfo.Content, recipe.UUID)
+	err = api.htmlFileGenerator(recipe.Name, recipeInfo.Content, recipe.UUID)
 	if err != nil {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -170,7 +84,6 @@ func (api *api) EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	recipeUUID := vars["id"]
 
-	fmt.Printf("%s", recipeUUID)
 	var recipeInfo RecipeInfo
 
 	err := json.NewDecoder(r.Body).Decode(&recipeInfo)
@@ -180,21 +93,21 @@ func (api *api) EditRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = deleteRecipeFiles(recipeUUID)
+	err = api.deleteRecipeFiles(recipeUUID)
 	if err != nil {
 		fmt.Printf("Can't delete filese cause, %s \n", err)
 		http.Error(w, "Can't delete recipe files", http.StatusInternalServerError)
 		return
 	}
 
-	err = mdFileGenreator(recipeInfo.Content, recipeUUID)
+	err = api.mdFileGenreator(recipeInfo.Content, recipeUUID)
 	if err != nil {
 		fmt.Printf("Can't generate md cause %s \n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
 
-	err = htmlFileGenerator(recipeInfo.Name, recipeInfo.Content, recipeUUID)
+	err = api.htmlFileGenerator(recipeInfo.Name, recipeInfo.Content, recipeUUID)
 	if err != nil {
 		fmt.Printf("Can't generate html cause, %s \n", err)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -235,7 +148,7 @@ func (api *api) DeleteRecipeHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if !fileExists(directoryPath) {
+	if !api.fileExists(directoryPath) {
 		fmt.Printf("Can't find recipe directory  to delete in path, %s\n", directoryPath)
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
@@ -290,17 +203,18 @@ func (api *api) ServeRecipe(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Serving Recipe %s", recipe.Name)
-
 	directoryPath := "upload/recipes/" + recipe.UUID + "/recipe.html"
 
-	if !fileExists(directoryPath) {
+	if !api.fileExists(directoryPath) {
 		http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
 		fmt.Printf("Can't get the most viewed recipes cause, %s", recipe.UUID)
 		return
 	}
 
-	tmpl, err := template.ParseFiles(directoryPath)
+	// Wrap Afero FS as io/fs.FS
+	fsWrapper := afero.NewIOFS(api.fs)
+
+	tmpl, err := template.ParseFS(fsWrapper, directoryPath)
 
 	err = tmpl.Execute(w, tmpl)
 	if err != nil {
@@ -331,11 +245,9 @@ func (api *api) RecipeInfoHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("Editing Recipe %s", recipe.Name)
-
 	filePath := "upload/recipes/" + recipe.UUID + "/recipe.md"
 
-	if !fileExists(filePath) {
+	if !api.fileExists(filePath) {
 		http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
 		fmt.Printf("\nCan't get the most viewed recipes cause, %s\n", recipe.UUID)
 		return
@@ -370,7 +282,7 @@ func (api *api) RecipeMdContent(w http.ResponseWriter, r *http.Request) {
 
 	directoryPath := "upload/recipes/" + recipe.UUID + "/recipe.md"
 
-	if !fileExists(directoryPath) {
+	if !api.fileExists(directoryPath) {
 		http.Error(w, "Can't find this recipe", http.StatusInternalServerError)
 		fmt.Printf("Can't get the most viewed recipes cause, %s", recipe.UUID)
 		return

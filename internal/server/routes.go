@@ -24,23 +24,26 @@ func (s *Server) RegisterRoutes() http.Handler {
 
 	// Admin Session/Management
 	r.HandleFunc("/admin/login", api.VerifyAdmin).Methods("POST")
-	r.HandleFunc("/admin/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
-	r.HandleFunc("/admin/user/delete/{id}", api.DeleteUserHandler).Methods("PATCH")
+	r.HandleFunc("/admin/recipe/delete/{id}", api.AdminAuth(api.DeleteRecipeHandler)).Methods("PATCH")
+	r.HandleFunc("/admin/user/delete/{id}", api.AdminAuth(api.DeleteUserHandler)).Methods("PATCH")
+	r.HandleFunc("/data/admin/allusers", api.AdminAuth(api.GetAllUsersHandler)).Methods("GET")
+
 	r.HandleFunc("/data/admin/allrecipes", api.GetAllRecipesHandler).Methods("GET")
-	r.HandleFunc("/data/admin/allusers", api.GetAllUsersHandler).Methods("GET")
 
 	// Recipe Management
 	r.HandleFunc("/uploadrecipe", api.Auth(api.UploadRecipe)).Methods("POST")
+	r.HandleFunc("/recipe/{id}", api.Auth(api.EditRecipeHandler)).Methods("PATCH")
+	r.HandleFunc("/recipe/delete/{id}", api.Auth(api.DeleteRecipeHandler)).Methods("PATCH")
+
 	r.HandleFunc("/recipe/{id}", api.ServeRecipe).Methods("GET")
-	r.HandleFunc("/recipe/{id}", api.EditRecipeHandler).Methods("PATCH")
-	r.HandleFunc("/recipe/delete/{id}", api.DeleteRecipeHandler).Methods("PATCH")
+
 	r.HandleFunc("/data/recipe/mostviewed", api.MostViewedRecipesHandler).Methods("GET")
 	r.HandleFunc("/data/recipe/search", api.SearchRecipeHandler).Methods("GET")
 	r.HandleFunc("/data/recipe/name/{id}", api.RecipeInfoHandler).Methods("GET")
 	r.HandleFunc("/data/recipe/content/{id}", api.RecipeMdContent).Methods("GET")
 
 	// User Management
-	r.HandleFunc("/user/{id}", api.DeleteUserHandler).Methods("DELETE")
+	r.HandleFunc("/user/{id}", api.AdminAuth(api.DeleteUserHandler)).Methods("DELETE")
 
 	// Data Handlers
 	r.HandleFunc("/data/login", api.LoginInfoHandler).Methods("GET")

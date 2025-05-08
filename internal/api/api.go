@@ -6,6 +6,8 @@ import (
 	"database/sql"
 	"fmt"
 	"net/http"
+
+	"github.com/spf13/afero"
 )
 
 type UserRequest struct {
@@ -35,6 +37,7 @@ type RecipeInfo struct {
 
 type Api interface {
 	Auth(next http.HandlerFunc) http.HandlerFunc
+	AdminAuth(next http.HandlerFunc) http.HandlerFunc
 
 	SignUpHandler(w http.ResponseWriter, r *http.Request)
 	LoginHandler(w http.ResponseWriter, r *http.Request)
@@ -63,14 +66,21 @@ type Api interface {
 
 type api struct {
 	db database.Service
+	fs afero.Fs
 }
 
 func NewApi() Api {
-	return &api{db: database.New()}
+	return &api{
+		db: database.New(),
+		fs: afero.OsFs{},
+	}
 }
 
-func NewTest(db *sql.DB) Api {
-	return &api{db: database.NewTest(db)}
+func NewTestWith(db *sql.DB, fs afero.Fs) Api {
+	return &api{
+		db: database.NewTest(db),
+		fs: fs,
+	}
 }
 
 func (api *api) createCookie(w http.ResponseWriter, ownerId string) *modals.Session {

@@ -14,6 +14,6 @@ func NewRecipe(name, ownerId string) *Recipe {
 		UUID:    uuid.NewString(),
 		Name:    name,
 		OwnerId: ownerId,
-		Views:   -1,
+		Views:   0,
 	}
 }

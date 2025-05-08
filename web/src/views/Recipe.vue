@@ -5,9 +5,8 @@ import { watch, ref, onMounted } from 'vue';
 const route = useRoute();
 const recipeId = ref(route.params.id);
 const recipe = ref(null);
-
 const getRecipe = async () => {
-  if (!recipeId.value) return; 
+  if (!recipeId.value) return;
 
   try {
     const response = await fetch('/api/recipe/' + recipeId.value, {
@@ -15,7 +14,7 @@ const getRecipe = async () => {
     });
 
     if (response.ok) {
-      recipe.value = await response.text(); 
+      recipe.value = await response.text();
       console.log('Got the recipe', recipe.value);
     } else {
       console.error('Didn\'t get the recipe');
@@ -24,25 +23,15 @@ const getRecipe = async () => {
     console.error('Cannot get the recipe:', error);
   }
 };
-
-// Fetch when component is mounted
 onMounted(getRecipe);
-
-// Watch for route changes and refetch
 watch(() => route.params.id, (newId) => {
   recipeId.value = newId;
   getRecipe();
 });
 </script>
-
 <template>
-
-
-  <div 
-    class="output prose ml-50 my-20 
+  <div class="output prose ml-50 my-20 
            lg:prose-li:marker:text-amber-900 lg:prose-headings:text-amber-900  
-           lg:prose-headings:font-[Monomakh] lg:text-amber-900"
-           v-html="recipe">
+           lg:prose-headings:font-[Monomakh] lg:text-amber-900" v-html="recipe">
   </div>
-
 </template>
