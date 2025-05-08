@@ -34,7 +34,6 @@ onMounted(async () => {
       <!-- Desktop Navigation Links -->
       <div class="hidden md:flex space-x-6 items-center">
         <router-link to="/" class="text-gray-700 hover:text-black font-medium">Home</router-link>
-        <router-link to="/about" class="text-gray-700 hover:text-black font-medium">About</router-link>
         <template v-if="auth.loggedIn">
           <router-link to="/uploadrecipe" class="text-gray-700 hover:text-black font-medium">Upload Recipe</router-link>
           <router-link to="/dashboard" class="text-gray-700 hover:text-black font-medium">Dashboard</router-link>
@@ -67,9 +66,6 @@ onMounted(async () => {
       <div class="flex flex-col space-y-3 py-2">
         <router-link @click="mobileMenuOpen = false" to="/" class="text-gray-700 hover:text-black font-medium px-2 py-1 rounded hover:bg-amber-200">
           Home
-        </router-link>
-        <router-link @click="mobileMenuOpen = false" to="/about" class="text-gray-700 hover:text-black font-medium px-2 py-1 rounded hover:bg-amber-200">
-          About
         </router-link>
         <template v-if="auth.loggedIn">
           <router-link @click="mobileMenuOpen = false" to="/uploadrecipe" class="text-gray-700 hover:text-black font-medium px-2 py-1 rounded hover:bg-amber-200">

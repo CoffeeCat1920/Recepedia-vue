@@ -62,6 +62,10 @@ type Api interface {
 	LoginRecipeInfoHandler(w http.ResponseWriter, r *http.Request)
 	AdminLoginInfoHandler(w http.ResponseWriter, r *http.Request)
 	AdminDashboardDataHandler(w http.ResponseWriter, r *http.Request)
+
+	LikeRecipeHandler(w http.ResponseWriter, r *http.Request)
+	DeleteLikeHandler(w http.ResponseWriter, r *http.Request)
+	IsLikedHandler(w http.ResponseWriter, r *http.Request)
 }
 
 type api struct {

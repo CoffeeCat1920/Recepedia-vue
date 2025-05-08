@@ -51,6 +51,11 @@ func (s *Server) RegisterRoutes() http.Handler {
 	r.HandleFunc("/data/admin/login", api.AdminLoginInfoHandler).Methods("GET")
 	r.HandleFunc("/data/admin/dashboard", api.AdminDashboardDataHandler).Methods("GET")
 
+	// Like
+	r.HandleFunc("/recipe/like", api.LikeRecipeHandler).Methods("POST")
+	r.HandleFunc("/recipe/unlike", api.DeleteLikeHandler).Methods("POST")
+	r.HandleFunc("/recipe/isliked", api.IsLikedHandler).Methods("POST")
+
 	// Debugging
 	r.HandleFunc("/health", s.healthHandler)
 

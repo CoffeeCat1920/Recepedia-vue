@@ -47,6 +47,11 @@ type Service interface {
 	NumberOfRecipes() int
 	GetAllRecipes() ([]modals.Recipe, error)
 
+	// Likes
+	AddLike(like *modals.Like) error
+	DeleteLikeFromUserRecipeId(userid string, recipeid string) error
+	IsLiked(userid string, recipeid string) error
+
 	Health() map[string]string
 
 	Close() error
